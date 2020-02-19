@@ -1,0 +1,237 @@
+1.Removing packages----------------------------
+    # sudo pacman -Rsn [package]
+        b43-fwcutter
+        falkon
+        filelight
+        firefox
+        gnome-icon-theme
+        gnome-themes-extra
+        gvfs-afc
+        gvfs-gphoto2
+        gvfs-mtp
+        gvfs-nfs
+        gvfs-smb
+        gvfs
+        gwenview
+        ipw2100-fw
+        ipw2200-fw
+        kamera
+        kdeconnect
+        konversation
+        kwalletmanager
+        kwallet-pam
+        lib32-libva-intel-driver
+        libva-intel-driver
+        manjaro-application-utility
+        manjaro-documentation-en
+        manjaro-hello
+        manjaro-settings-manager-knotifier
+        manjaro-wallpapers-18.0
+        illyria-wallpaper
+        oxygen-icons
+        oxygen
+        pamac-tray-appindicator
+        pamac-gtk
+        pamac-cli
+        plasma-workspace-wallpapers
+        s-nail
+        steam-manjaro
+        thunderbird
+        unarchiver
+        vlc
+        wallpapers-2018
+        wallpapers-juhraya
+        zip
+        zsh
+
+2.Upgrading packages---------------------------
+    # sudo pacman-mirrors --fasttrack
+    # sudo pacman -Syyu
+    
+3.Installing packages--------------------------
+    # sudo pacman -S [package]
+        yay
+        baidupcs-go (login with BDUSS)
+        base-devel
+        clipgrab
+        code
+        gimp
+        k3b
+        kdenlive
+        keepassxc
+        kget
+        kolourpaint
+        krename
+        libreoffice
+        libreoffice-still-zh-tw
+        ibus
+        mpv
+        ms-office-online
+        opera
+        opera-ffmpeg-codecs
+        qmmp
+        rclone
+        skanlite
+        unrar
+        wine
+        youtube-dl
+
+        .bauh
+        .deadbeef
+        .filezilla
+        .handbrake
+        .ibus-rime
+        .kbackup 
+        .kio-gdrive
+        .ktorrent
+        .lm_sensors
+        .notepadqq
+        .powertop
+        .sweeper
+        .tlpui
+        
+4.Installing packages from AUR-----------------
+    $ yay -S [package]
+        anydesk
+        crow-translate
+        ibus-libzhuyin
+        megacmd-bin
+        safeeyes
+        stacer
+        qbittorrent-enhanced-git
+        qview
+        rclone-browser
+        
+        .4kvideodownloader
+        .baidunetdisk (Official Baidu NetDisk)
+        .google-maps-desktop
+        .jre
+        .jdownloader2
+        .megasync
+        .museeks
+        .peazip
+        .sublime-text
+        .teamviewer
+        .visual-studio-code-bin
+        .vscodium-bin
+        .vvave
+        *journey : sudo snap install journey
+
+5.Set ibus-libzhuyin Input Method----------
+    5-1.cd ~/.xprofile (or Create one)
+    5-2.Paste
+        export XMODIFIERS=@im=ibus
+        export GTK_IM_MODULE=ibus
+        export QT_IM_MODULE=ibus
+        ibus-daemon -drx
+    5-3.ReLogin
+
+6.Install Sophos AntiVirus free----------------
+    # sudo sh install.sh
+
+7.System Settings------------------------------
+    6-1.Hardware Configuration ---> Romove older and Install New One
+    6-2.Language Packages ---> Install Language Packages
+    6-3.Local > Detailed Settings > Time ---> Modify to English(US)
+    6-4.Global Theme ---> Breath
+    6-5.Plasma Style ---> Breath
+    6-6.Application Style > GNOME/GTK ---> Breeze
+    6-7.Colors---> Breeze
+    6-8.Fonts ---> Force font DPI modify to 120
+    6-9.Icons ---> Breeze
+    6-10.Workspace Behavior > Desktop Effects > Show Desktop Animation ---> Cancel Window Aperture
+    6-11.Workspace Behavior > Desktop Effects > Window O/C Animation ---> Scale
+    6-12.Workspace Behavior > Screen Edges ---> Cancel
+    6-13.Workspace Behavior > Touch Screen ---> Cancel
+    6-14.Workspace Behavior > Screen Locking ---> 15min
+    6-15.Window Management > Task Switcher ---> Thumbnails
+    6-16.Shortcuts > Web Shortcuts ---> Cancel
+    6-17.Startup > Login Screen ---> Delete Others
+    6-18.Display and Monitor > Compositor ---> Cancel "Allow applications to block compositing"
+    6-19.Input Devices  ---> Turn on NumLock
+
+8.Desktop Customization------------------------
+    8-1.Add KDE Widget
+        Win7 Show
+        Customizable multi-action menu
+        .Tiled Menu
+
+    8-2.Modify Application Launcher Icon
+        drag-surface
+        show-grid
+        view-list-icons
+        im-msn
+        
+9.Applications Setting-------------------------
+    9-1.Kate ---> Monokai Schemas
+    9-2.Konsole ---> Copy Theme "Breeze", and change foreground color to #9eb2b4, font size 11
+    9-3.KSysGuard ---> Import tab
+    9-4.Opera ---> Modify flags as screenshots
+    9-5.mpv   ---> Copy mpv folder to ~/.config/
+    9-6.rclone---> Copy rclone folder to ~/.config/
+    9-7.Qmmp  ---> Copy .qmmp folder to ~/
+    9-8.LibreOffice ---> Change Splash by tutorial
+    9-9.Wine 7zip ---> Copy 7z.dll & 7z.exe to ~/.wine/drive_c/windows/
+    
+10.Automount HDD-------------------------------
+    Modify /etc/fstab
+    UUID=208b1ed0-0de4-4ed0-9cdc-ebdc61e2ff96 /home/zelko/Downloads ext4 defaults,noatime,nodiratime 0 2
+
+11.Turn On SSD TRIM----------------------------
+    sudo systemctl enable fstrim.timer
+
+-----------------------------------------------
+
+echo "alias ll='ls -a'" >> ~/.bashrc    ＃自定義指令
+source ~/.bashrc    ＃即時啟用
+
+-----------------------------------------------
+rm -r 
+/home/zelko/.config/falkon/
+/home/zelko/.config/kdeconnect/
+/usr/share/wallpapers/Next/
+
+rm
+/home/zelko/.config/gwenviewrc
+/home/zelko/.config/kwalletrc
+/home/zelko/.config/manjaro-hello.json
+-----------------------------------------------
+
+Set GRUB in Windows10
+
+Run CMD as Administrator
+bcdedit /set {bootmgr} path \EFI\manjaro\grubx64.efi
+Reboot
+
+-----------------------------------------------
+
+Set System time in Manjaro
+
+sudo timedatectl set-local-rtc 1 --adjust-system-clock  /// Use RTC (with win10)
+sudo timedatectl set-local-rtc false                    /// Use UTC (Linux Only)
+sudo timedatectl set-ntp true                           /// Sync Time with NTP
+
+-----------------------------------------------
+
+# pacman-mirrors -i -c Taiwan -m rank    選擇套件源
+
+$ pacman -Qs  搜尋已安裝的軟體包：
+$ pacman -Ss  搜尋資料源軟體包：
+$ pacman -Scc 清理整個軟體包快取：
+$ pacman -Qdt 罗列所有不再作为依赖的软件包
+$ paccache -r 删除近3个版本前的软件包
+
+$ watch -n 1 nvidia-smi   檢視Nvidia GPU State
+
+$ gdown 'URL' -O [path]
+$ mega-get URL [path]
+
+$ find -type l -print0 | xargs -0 rm    刪除連結檔
+
+$ ls -l . | egrep -c '^-' 計算檔案數量
+
+qbittorrent
+Outstanding memory when checking torrents > 256 MiB
+Coalesce reads & writes > enable
+Upload slots behavior > Upload rate based
+Upload choking algorithm > Round-robin
