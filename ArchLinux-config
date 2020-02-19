@@ -1,0 +1,96 @@
+# !/bin/bash
+
+# Sync Date&Time
+sudo timedatectl set-ntp true
+
+# Enable SSD Trim
+sudo systemctl enable fstrim.timer
+
+# Automount HDD (ID isn't a constant)
+# sudo echo "UUID=4d3b8dae-6572-443d-8d9b-d6468f6fcd7c /home/zelko/Downloads ext4 defaults,noatime,nodiratime 0 2" >> /etc/fstab
+
+# Set iBus input method
+echo "export XMODIFIERS=@im=ibus" >> ~/.xprofile
+echo "export GTK_IM_MODULE=ibus" >> ~/.xprofile
+echo "export QT_IM_MODULE=ibus" >> ~/.xprofile
+echo "ibus-daemon -drx" >> ~/.xprofile
+sudo cp icons/ibus-zhuyin.svg /usr/share/ibus-libzhuyin/icons/
+sudo cp icons/ibus-zhuyin.svg /usr/share/icons/hicolor/scalable/apps/ibus-engine.svg
+sudo cp icons/ibus-zhuyin.svg /usr/share/icons/hicolor/scalable/apps/ibus-keyboard.svg
+sudo cp icons/ibus-zhuyin.svg /usr/share/icons/hicolor/scalable/apps/ibus-setup.svg
+sudo cp icons/ibus-zhuyin.svg /usr/share/icons/hicolor/scalable/apps/ibus.svg
+
+# Set Konsole
+cp -r config/konsole/ ~/.local/share/
+
+# Set Kate
+cp config/kate/anonymous.katesession ~/.local/share/kate/
+cp config/kate/katerc ~/.config/
+cp config/kate/kateschemarc ~/.config/
+cp config/kate/katesyntaxhighlightingrc ~/.config/
+
+# Set KeePassXC
+cp -r config/keepassxc/ ~/.config/
+
+# Set qBittorrent
+cp -r config/qBittorrent/ ~/.config/
+
+# Set rclone & rclone browser
+cp -r config/rclone/ ~/.config/
+
+# Set qView
+cp -r config/qView/ ~/.config/
+
+# Set MPV Player
+cp -r config/mpv/ ~/.config/
+
+# Set qmmp Audio Player
+cp -r config/.qmmp/ ~/
+
+# Set Safe Eyes
+cp -r config/safeeyes/ ~/.config/
+
+# Set Wine 7zip library (19.02)
+cp config/7z.dll ~/.wine/drive_c/windows/
+cp config/7z.exe ~/.wine/drive_c/windows/
+
+# Add Custom Command
+echo "alias aac='sh ~/Documents/Scripts/Archive.sh'" >> ~/.bashrc
+echo "alias uuc='sh ~/Documents/Scripts/Extract.sh'" >> ~/.bashrc
+echo "alias cc='sh ~/Documents/Scripts/HV.Check.sh'" >> ~/.bashrc
+echo "alias dd='sh ~/Documents/Scripts/HV.Download.sh'" >> ~/.bashrc
+echo "alias ee='sh ~/Documents/Scripts/HV.Extract.sh'" >> ~/.bashrc
+echo "alias aa='sh ~/Documents/Scripts/HV.Archive.sh'" >> ~/.bashrc
+echo "alias uu='sh ~/Documents/Scripts/HV.Upload.sh'" >> ~/.bashrc
+echo "alias unzip-jp='python ~/Documents/Scripts/unzip-jp.py'" >> ~/.bashrc
+echo "alias unzip-sc='python ~/Documents/Scripts/unzip-sc.py'" >> ~/.bashrc
+
+# Change LibreOffice Splash
+sudo cp config/LibreOffice_Splash/intro.png /usr/lib/libreoffice/program
+sudo cp config/LibreOffice_Splash/intro-highres.png /usr/lib/libreoffice/program
+
+# Change KeePassXC Icon
+sudo cp icons/keepass/* /usr/share/keepassxc/icons/database/
+
+# Change Applications Icon
+sudo cp icons/*.{ico,png,svg} /usr/share/icons/breeze/apps/48/
+
+# Change Files Icon
+# sudo cp icons/mimetypes/* /usr/share/icons/breeze/mimetypes/32/
+# sudo cp icons/mimetypes/* /usr/share/icons/breeze/mimetypes/64/
+
+# Delete Unnecessary files
+rm ~/.config/gwenviewrc
+rm ~/.config/kwalletrc
+rm ~/.config/manjaro-hello.json
+rm -r ~/.config/falkon/
+rm -r ~/.config/kdeconnect/
+sudo rm -r /usr/share/wallpapers/Next/
+sudo rm -r /usr/share/icons/Adwaita/
+sudo rm -r /usr/share/icons/gnome/
+sudo rm -r /usr/share/plasma/desktoptheme/air/
+sudo rm -r /usr/share/plasma/desktoptheme/oxygen/
+sudo rm /usr/share/pixmaps/*
+
+sudo pacman -Qdt
+sudo pacman -Scc
