@@ -80,17 +80,12 @@ sudo cp icons/*.{ico,png,svg} /usr/share/icons/breeze/apps/48/
 # sudo cp icons/mimetypes/* /usr/share/icons/breeze/mimetypes/64/
 
 # Delete Unnecessary files
-rm ~/.config/gwenviewrc
 rm ~/.config/kwalletrc
-rm ~/.config/manjaro-hello.json
-rm -r ~/.config/falkon/
-rm -r ~/.config/kdeconnect/
 sudo rm -r /usr/share/wallpapers/Next/
 sudo rm -r /usr/share/icons/Adwaita/
 sudo rm -r /usr/share/icons/gnome/
 sudo rm -r /usr/share/plasma/desktoptheme/air/
 sudo rm -r /usr/share/plasma/desktoptheme/oxygen/
-sudo rm /usr/share/pixmaps/*
 
 sudo pacman -Qdt
 sudo pacman -Scc
