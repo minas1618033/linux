@@ -108,7 +108,29 @@ Arch Linux Installation Note
     sudo pacman -Sy
     pacman -S archlinuxcn-keyring
 
+# Clone Installation Scripts
+    git clone https://github.com/minas1618033/Linux-Installation-Note.git
+    cd Linux-Installation-Note
+    sh ArchLinux-apps
+    sh ArchLinux-config
 
+# Grub2 Theme Installation
+    sudo pacman -S grub-theme-vimix
+
+    sudo nano /etc/default/grub
+        GRUB_THEME="/boot/grub/themes/Vimix/theme.txt"
+
+    sudo grub-mkconfig -o /boot/grub/grub.cfg
+
+# If Opera crash :
+    opera --disable-seccomp-filter-sandbox
+
+
+# If keyring could not be locally signed :
+    rm -fr /etc/pacman.d/gnupg
+    pacman-key --init
+    pacman-key --populate archlinux
+    
 # nano /etc/pacman.d/mirrorlist :
 
 ## Taiwan
