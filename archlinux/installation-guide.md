@@ -1,10 +1,9 @@
-Arch Linux Installation Note
-
-# Update the system clock :
+## Update the system clock
     timedatectl set-ntp true
 
-# Partition the disks :
-    fdisk /dev/sda
+## Partition the disks
+    fdisk /dev/{nvme0n1, sda, sdb}
+    
     g : create GPT partition table
     n : add new partition
     t : change partition type
@@ -13,7 +12,7 @@ Arch Linux Installation Note
     19 Linux Swap
     28 LinuxHome
 
-# Format the partitions :
+## Format the partitions
     mkfs.fat -F32 /dev/nvme0n1p1
     mkfs.ext4 /dev/nvme0n1p2
     mkfs.ext4 /dev/sda1
@@ -21,79 +20,86 @@ Arch Linux Installation Note
     mkswap /dev/nvme0n1p3
     swapon /dev/nvme0n1p3
 
-# Mount the file systems :
-    mkdir /mnt/boot
-    mkdir /mnt/boot/efi
+## Mount the file systems
+    mkdir -p /mnt/boot/efi
     mount /dev/nvme0n1p1 /mnt/boot/efi
     mount /dev/nvme0n1p2 /mnt
 
-# Select the mirrors & Install essential packages :
+## Select the mirrors & Install essential packages
     vim /etc/pacman.d/mirrorlist
         ## Taiwan
         Server = http://ftp.yzu.edu.tw/Linux/archlinux/$repo/os/$arch
     pacstrap /mnt base linux linux-firmware
-    mkdir /mnt/boot/efi
-    mount /dev/sda1 /mnt/boot/efi
+    mkdir -p /mnt/boot/efi
+    mount /dev/nvme0n1p1 /mnt/boot/efi
 
-# Generate fstab（-U:UUID） :
+## Generate fstab
     genfstab -U /mnt >> /mnt/etc/fstab
     cat /mnt/etc/fstab
-    (if no boot partition, mount /dev/sda1 /mnt/boot/efi again)
+    (if no boot partition, mount /dev/nvme0n1p1 /mnt/boot/efi again)
 
-# Change root into the new system :
+## Change root into the new system
     arch-chroot /mnt
 
-# Install essential packages :
+## Install essential packages
     pacman -S sudo dhcpcd nano
 
-# Set the time zone (Optional) :
+## Set the time zone
     ln -sf /usr/share/zoneinfo/Asia/Taipei /etc/localtime
     hwclock --systohc
 
-# Localization (Optional) :
+## Localization
     nano /etc/locale.gen
         Uncomment en_US.UTF-8 UTF-8, zh_TW.UTF-8 UTF8
     locale-gen
+    nano /etc/locale.conf
+        LANG=en_US.UTF-8
+        LC_CTYPE="zh_TW.UTF-8"
 
-# Network Configuration :
-    nano /etc/hostname
-        {myhostname}
+## Network Configuration
+    echo {myhostname} > /etc/hostname
 
     nano /etc/hosts
         127.0.0.1   localhost
         ::1         localhost
         127.0.1.1   {myhostname}.localdomain  {myhostname}
 
-# Install Boot loader :
+## Install Boot loader
     pacman -S os-prober ntfs-3g amd-ucode grub efibootmgr
 
-# GRUB Configuration :
+## GRUB Configuration
     mkdir /boot/grub
     grub-mkconfig -o /boot/grub/grub.cfg
     grub-install --target=x86_64-efi --efi-directory=/boot/efi
 
-# Set the root password :
+## Set the root password
     passwd
 
-# Add users account :
+## Add users account
     useradd -m {username}
     passwd {username}
     nano /etc/sudoers
         root ALL=(ALL) ALL
         {username} ALL=(ALL) ALL
 
-# Reboot :
+## Reboot
     exit
     umount -R /mnt
     reboot
 
-# Enable DHCP :
+## Enable DHCP
     sudo systemctl start dhcpcd
     sudo systemctl enable dhcpcd
     logout
     login
 
-# Install KDE environment :
+## Clone installation scripts
+    git clone https://github.com/minas1618033/archlinux.git
+    cd archlinux
+    sh auto-install.sh
+    sh auto-config.sh
+    
+## Install KDE environment
     xorg-server
     nvidia
     plasma
@@ -102,19 +108,21 @@ Arch Linux Installation Note
     sudo systemctl enable NetworkManager
     reboot
 
-# Add archlinuxcn Repository :
+## Add archlinuxcn Repository
     echo "[archlinuxcn]" >> /etc/pacman.conf
     echo "Server = https://repo.archlinuxcn.org/$arch" >> /etc/pacman.conf
     sudo pacman -Sy
     pacman -S archlinuxcn-keyring
 
-# Clone Installation Scripts
-    git clone https://github.com/minas1618033/Linux-Installation-Note.git
-    cd Linux-Installation-Note
-    sh ArchLinux-apps
-    sh ArchLinux-config
+## If keyring could not be locally signed
+    rm -fr /etc/pacman.d/gnupg
+    pacman-key --init
+    pacman-key --populate archlinux
 
-# Grub2 Theme Installation
+## If AUR package fails to verify PGP/GPG key
+    gpg --recv-keys {keys}
+
+## Grub2 Theme Installation
     sudo pacman -S grub-theme-vimix
 
     sudo nano /etc/default/grub
@@ -122,25 +130,5 @@ Arch Linux Installation Note
 
     sudo grub-mkconfig -o /boot/grub/grub.cfg
 
-# If Opera crash :
+## If Opera crash :
     opera --disable-seccomp-filter-sandbox
-
-
-# If keyring could not be locally signed :
-    rm -fr /etc/pacman.d/gnupg
-    pacman-key --init
-    pacman-key --populate archlinux
-    
-# nano /etc/pacman.d/mirrorlist :
-
-## Taiwan
-Server = http://ftp.yzu.edu.tw/Linux/archlinux/$repo/os/$arch
-
-## Taiwan
-Server = http://shadow.ind.ntou.edu.tw/archlinux/$repo/os/$arch
-
-## Taiwan
-Server = http://archlinux.cs.nctu.edu.tw/$repo/os/$arch
-
-## Taiwan
-Server = http://ftp.tku.edu.tw/Linux/ArchLinux/$repo/os/$arch
