@@ -1,12 +1,19 @@
 # !/bin/bash
-
-sudo sh -c "echo "" >> /etc/pacman.conf"
-sudo sh -c "echo "[archlinuxcn]" >> /etc/pacman.conf"
-sudo sh -c "echo "Server = https://mirrors.ustc.edu.cn/archlinuxcn/$arch" >> /etc/pacman.conf"
-
+sudo sh -c "echo '' >> /etc/pacman.conf"
+sudo sh -c "echo '[archlinuxcn]' >> /etc/pacman.conf"
+sudo sh -c "echo 'Server = https://repo.archlinuxcn.org/\$arch' >> /etc/pacman.conf"
 sudo pacman -Syyu
 sudo pacman -S --noconfirm archlinuxcn-keyring
-sudo pacman -S --noconfirm unzip-iconv
+
+printf "\nContinue to install applications? [Y/N] "
+read -n1 action
+echo
+    case $action in
+        [Nn]) exit ;;
+        [Yy]) break ;;
+        *) exit ;;
+    esac
+
 sudo pacman -S --noconfirm xorg-server
 sudo pacman -S --noconfirm nvidia
 sudo pacman -S --noconfirm bluedevil
@@ -45,15 +52,12 @@ sudo pacman -S --noconfirm user-manager
 sudo pacman -S --noconfirm xdg-desktop-portal-kde
 sudo pacman -S --noconfirm ark
 sudo pacman -S --noconfirm baidupcs-go
-sudo pacman -S --noconfirm binutils
-sudo pacman -S --noconfirm bison
 sudo pacman -S --noconfirm bleachbit
 sudo pacman -S --noconfirm clipgrab
 sudo pacman -S --noconfirm code
 sudo pacman -S --noconfirm cronie
 sudo pacman -S --noconfirm dolphin
 sudo pacman -S --noconfirm dolphin-plugins
-sudo pacman -S --noconfirm fakeroot
 sudo pacman -S --noconfirm ffmpegthumbs
 sudo pacman -S --noconfirm gimp
 sudo pacman -S --noconfirm git
@@ -82,7 +86,6 @@ sudo pacman -S --noconfirm opera
 sudo pacman -S --noconfirm opera-ffmpeg-codecs
 sudo pacman -S --noconfirm p7zip
 sudo pacman -S --noconfirm partitionmanager
-sudo pacman -S --noconfirm patch
 sudo pacman -S --noconfirm profile-sync-daemon
 sudo pacman -S --noconfirm qmmp
 sudo pacman -S --noconfirm qt5-imageformats
@@ -93,22 +96,25 @@ sudo pacman -S --noconfirm spectacle
 sudo pacman -S --noconfirm unrar
 sudo pacman -S --noconfirm xdg-user-dirs
 sudo pacman -S --noconfirm yakuake
-sudo pacman -S --noconfirm youtube-dl
 
 sudo pacman -S --noconfirm anydesk
 sudo pacman -S --noconfirm crow-translate
 sudo pacman -S --noconfirm megatools
+sudo pacman -S --noconfirm ibus-libzhuyin
 sudo pacman -S --noconfirm qbittorrent-enhanced-git
 sudo pacman -S --noconfirm qview
+sudo pacman -S --noconfirm rclone-browser
+sudo pacman -S --noconfirm safeeyes-git
+sudo pacman -S --noconfirm unzip-iconv
+sudo pacman -S --noconfirm wine-x64
 sudo pacman -S --noconfirm yay
-sudo pacman -S virtualbox
+sudo pacman -S virtualbox virtualbox-guest-utils
 
 # sudo pacman -S --noconfirm cups
 # sudo pacman -S --noconfirm exfat-utils
 # sudo pacman -S --noconfirm faad2 (qmmp)
 # sudo pacman -S --noconfirm grub-theme-vimix
 # sudo pacman -S --noconfirm k3b
-# sudo pacman -S --noconfirm kaccounts-integration
 # sudo pacman -S --noconfirm kaccounts-providers
 # sudo pacman -S --noconfirm kwayland-integration
 # sudo pacman -S --noconfirm libmpcdec (qmmp)
@@ -125,19 +131,17 @@ sudo pacman -S virtualbox
 # sudo pacman -S --noconfirm usb_modeswitch
 # sudo pacman -S --noconfirm wildmidi (qmmp)
 # sudo pacman -S --noconfirm wine
+# sudo pacman -S --noconfirm youtube-dl
 
 # git clone https://aur.archlinux.org/trizen.git
 # cd trizen
 # makepkg -si
 
-yay -S ibus-libzhuyin
 yay -S kde-servicemenus-rootactions
 yay -S ms-office-online
-yay -S safeeyes
-yay -S rclone-browser
-yay -S wine-x64
 
 # trizen -S imagewriter
+# trizen -S kmarkdownwebview
 # trizen -S ksnip
 # trizen -S megacmd-bin
 # trizen -S stacer
@@ -148,4 +152,3 @@ yay -S wine-x64
 
 sudo systemctl enable sddm
 sudo systemctl enable NetworkManager
-reboot
