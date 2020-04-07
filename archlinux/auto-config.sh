@@ -3,12 +3,12 @@
 # Sync Date&Time
 sudo timedatectl set-ntp true &&
     echo "OK, Network time sync is Enabled." || 
-    echo "Error : Network time sync is Faulted. <<<<<<<<<<<<<<<" ;
+    echo "Error : Network time sync is Faulted. <<<<<<<<<<<<<<" ;
 
 # Enable SSD Trim
 sudo systemctl enable fstrim.timer &&
     echo "OK, SSD Trim is Enabled." ||
-    echo "Error : SSD Trim can't be turn on.    <<<<<<<<<<<<<<<" ;
+    echo "Error : SSD Trim can't be turn on.    <<<<<<<<<<<<<<" ;
 
 # Automount HDD (sudo blkid to find UUID)
     # # /dev/nvme0n1p1
@@ -20,28 +20,48 @@ sudo systemctl enable fstrim.timer &&
     # # /dev/sda1
     # UUID={UUID} /home/zelko/Purple ext4 defaults,noatime 0 2
 
+# Auto update systemd-boot bootloader
+sudo echo "[Trigger]
+Type = Package
+Operation = Upgrade
+Target = systemd
+
+[Action]
+Description = Updating systemd-boot
+When = PostTransaction
+Exec = /usr/bin/bootctl update" >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+    echo "OK, Auto update systemd-boot is configured." ||
+    echo "Error : Auto update systemd-boot configuration is wrong. <<<<<<<<<<<<<<<" ;
+
+# Automount GSuite
+mkdir ~/Downloads/GSuite/
+echo "rclone mount GSuite: ~/Downloads/GSuite/ --daemon --buffer-size 128M" >> ~/.xprofile &&
+    echo "OK, Automount GSuite is configured." ||
+    echo "Error : Automount GSuite configuration is wrong. <<<<<<<<<<<<<<<" ;
+    
 # Turn on NumLock in SDDM
-sudo sh -c "echo "[General]" >> /etc/sddm.conf" &&
-sudo sh -c "echo "Numlock=on" >> /etc/sddm.conf" &&
-sudo sh -c "echo "" >> /etc/sddm.conf" &&
-sudo sh -c "echo "[X11]" >> /etc/sddm.conf" &&
-sudo sh -c "echo "EnableHiDPI=true" >> /etc/sddm.conf" &&
-sudo sh -c "echo "ServerArguments=-nolisten tcp -dpi 120" >> /etc/sddm.conf" &&
+sudo echo "[General]
+Numlock=on
+
+[X11]
+EnableHiDPI=true
+ServerArguments=-nolisten tcp -dpi 120" >> /etc/sddm.conf &&
     echo "OK, NumLock in SDDM is enabled." ||
-    echo "Error : NumLock can't be turn on. <<<<<<<<<<<<<<<<<<<" ;
+    echo "Error : NumLock can't be turn on. <<<<<<<<<<<<<<<<<<" ;
  
 # Set iBus input method
-echo "export XMODIFIERS=@im=ibus" >> ~/.xprofile &&
-echo "export GTK_IM_MODULE=ibus" >> ~/.xprofile &&
-echo "export QT_IM_MODULE=ibus" >> ~/.xprofile &&
-echo "ibus-daemon -drx" >> ~/.xprofile &&
+echo "export XMODIFIERS=@im=ibus
+export GTK_IM_MODULE=ibus
+export QT_IM_MODULE=ibus
+ibus-daemon -drx" >> ~/.xprofile &&
     echo "OK, iBus is configured." ||
-    echo "Error : iBus configuration is wrong. <<<<<<<<<<<<<<<<" ;
+    echo "Error : iBus configuration is wrong. <<<<<<<<<<<<<<<" ;
 
 # Set Konsole
 cp -r ./config/konsole/ ~/.local/share/ &&
+cp ./config/konsole/konsolerc ~/.config/ &&
     echo "OK, Konsole is configured." ||
-    echo "Error : Konsole configuration is wrong. <<<<<<<<<<<<<" ;
+    echo "Error : Konsole configuration is wrong. <<<<<<<<<<<<" ;
 
 # Set Kate
 cp ./config/kate/anonymous.katesession ~/.local/share/kate/ &&
@@ -57,6 +77,11 @@ sudo cp ./config/icons/keepass/* /usr/share/keepassxc/icons/database/ &&
     echo "OK, KeePassXC is configured." ||
     echo "Error : KeePassXC configuration is wrong. <<<<<<<<<<" ;
 
+# Set Kwallet
+cp ./config/kwallet/kwalletrc ~/.config/ &&
+    echo "OK, Kwallet is disabled." ||
+    echo "Error : Kwallet still enable. <<<<<<<<<<<<<<<<<<<<<<" ;
+    
 # Set qBittorrent
 cp -r ./config/qBittorrent/ ~/.config/ &&
     echo "OK, qBittorrent is configured." ||
@@ -93,27 +118,27 @@ sudo cp -r ./config/WifiAudio/ /usr/share/ &&
     echo "Error : WifiAudio configuration is wrong. <<<<<<<<<<" ;
 
 # Set Wine 7zip library (20.02)
-wine64 &&
-cp ./config/7z.dll ~/.wine/drive_c/windows/ &&
-cp ./config/7z.exe ~/.wine/drive_c/windows/ &&
+wine64 7z &&
+cp ./config/7-zip/7z.dll ~/.wine/drive_c/windows/ &&
+cp ./config/7-zip/7z.exe ~/.wine/drive_c/windows/ &&
     echo "OK, Wine is configured." ||
     echo "Error : Wine configuration is wrong. <<<<<<<<<<<<<<<" ;
 
 # Add Custom Command
-echo "alias aac='sh ~/Documents/scripts/Archive.sh'" >> ~/.bashrc &&
-echo "alias eec='sh ~/Documents/scripts/Extract.sh'" >> ~/.bashrc &&
-echo "alias cc='sh ~/Documents/scripts/HV.Check.sh'" >> ~/.bashrc &&
-echo "alias dd='sh ~/Documents/scripts/HV.Download.sh'" >> ~/.bashrc &&
-echo "alias ee='sh ~/Documents/scripts/HV.Extract.sh'" >> ~/.bashrc &&
-echo "alias aa='sh ~/Documents/scripts/HV.Archive.sh'" >> ~/.bashrc &&
-echo "alias uu='sh ~/Documents/scripts/HV.Upload.sh'" >> ~/.bashrc &&
-echo "alias uux='sh ~/Documents/scripts/HV.UploadX.sh'" >> ~/.bashrc &&
+echo "alias eec='sh ~/Documents/scripts/Extract.sh'
+alias cc='sh ~/Documents/scripts/check.sh'
+alias dd='sh ~/Documents/scripts/download.sh'
+alias ee='sh ~/Documents/scripts/extract.sh'
+alias aa='sh ~/Documents/scripts/archive.sh'
+alias uu='sh ~/Documents/scripts/upload.sh'" >> ~/.bashrc &&
 # echo "alias unzip-jp='python ~/Documents/scripts/unzip-jp.py'" >> ~/.bashrc &&
 # echo "alias unzip-sc='python ~/Documents/scripts/unzip-sc.py'" >> ~/.bashrc &&
 cat ./scripts/GD.Download >> ~/.bashrc &&
 cat ./scripts/mpvDVD >> ~/.bashrc &&
+echo "alias baidu='baidupcs'
+alias baidu-login='baidupcs login -bduss=Z4d0NWbEFpYTZ-SUxwUDZUSEhNckd6RHJpRHVtbnZmWXVXRkpUdW1wY0R2NlplRUFBQUFBJCQAAAAAAAAAAAEAAAA6iYUJbWluYXMxNjE4MDMzAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMyf14DMn9eQX'" >> ~/.bashrc &&
     echo "OK, Custom Command is added to bashrc." ||
-    echo "Error : Custom Command configuration is wrong. <<<<<<<<<<<<<<<" ;
+    echo "Error : Custom Command configuration is wrong. <<<<<<<<<<" ;
 
 
 # Change LibreOffice splash
@@ -123,21 +148,21 @@ sudo cp ./config/libreoffice/intro-highres.png /usr/lib/libreoffice/program &&
     echo "Error : LibreOffice splash isn't changed. <<<<<<<<<<" ;
 
 # Change GIMP splash
-mkdir ~/.config/GIMP/2.10/splashes &&
-cp ./config/gimp/maxresdefault1.png ~/.config/GIMP/2.10/splashes/maxresdefault1.png &&
-    echo "OK, GIMP splash is changed." ||
-    echo "Error : GIMP splash isn't changed. <<<<<<<<<<<<<<<<<" ;
+# mkdir -p ~/.config/GIMP/2.10/splashes &&
+# cp ./config/gimp/maxresdefault1.png ~/.config/GIMP/2.10/splashes/maxresdefault1.png &&
+#     echo "OK, GIMP splash is changed." ||
+#     echo "Error : GIMP splash isn't changed. <<<<<<<<<<<<<<<<<" ;
 
 # Change Applications & Files icon
-sudo rm -r /usr/share/icons/breeze/apps/48/ &&
+# sudo rm -r /usr/share/icons/breeze/apps/48/ &&
 sudo cp -r ./config/icons/apps/48/ /usr/share/icons/breeze/apps/ &&
 sudo cp -r ./config/icons/pixmaps/ /usr/share/ &&
-sudo cp -r ./config/icons/mimetypes/32/ /usr/share/icons/breeze/mimetypes/ &&
-sudo cp -r ./config/icons/mimetypes/64/ /usr/share/icons/breeze/mimetypes/ &&
+# sudo cp -r ./config/icons/mimetypes/32/ /usr/share/icons/breeze/mimetypes/ &&
+# sudo cp -r ./config/icons/mimetypes/64/ /usr/share/icons/breeze/mimetypes/ &&
 
 sudo cp ./config/icons/hicolor/anydesk.svg /usr/share/icons/hicolor/scalable/apps/anydesk.svg &&
 sudo cp ./config/icons/hicolor/crow-translate.svg /usr/share/icons/hicolor/scalable/apps/crow-translate.svg &&
-sudo cp ./config/icons/hicolor/ibus-zhuyin.svg /usr/share/ibus-libzhuyin/icons/ &&
+sudo cp ./config/icons/hicolor/ibus-zhuyin.svg /usr/share/ibus-libzhuyin/icons/ibus-zhuyin.svg &&
 sudo cp ./config/icons/hicolor/ibus-zhuyin.svg /usr/share/icons/hicolor/scalable/apps/ibus-engine.svg &&
 sudo cp ./config/icons/hicolor/ibus-zhuyin.svg /usr/share/icons/hicolor/scalable/apps/ibus-keyboard.svg &&
 sudo cp ./config/icons/hicolor/ibus-zhuyin.svg /usr/share/icons/hicolor/scalable/apps/ibus-setup.svg &&
@@ -155,12 +180,12 @@ sudo cp ./config/icons/hicolor/torrents_dark.svg /usr/share/icons/hicolor/scalab
     echo "Error : Applications & Files icon isn't changed. <<<" ;
 
 # Add Plasma themes
-# sudo cp -r ./config/themes/usr/share/plasma/desktoptheme/breath/ /usr/share/plasma/desktoptheme/ &&
+sudo cp -r ./config/themes/usr/share/plasma/desktoptheme/breath-dark/ /usr/share/plasma/desktoptheme/ &&
 # sudo cp -r ./config/themes/usr/share/sddm/themes/breath/ /usr/share/sddm/themes/breath/ &&
 # sudo cp -r ./config/themes/usr/share/themes/Breath/ /usr/share/themes/ &&
 # sudo cp -r ./config/themes/usr/share/themes/Breath-Dark/ /usr/share/themes/ &&
-#     echo "OK, Plasma themes is added." ||
-#     echo "Error : Plasma themes isn't added. <<<<<<<<<<<<<<<<<" ;
+    echo "OK, Plasma themes is added." ||
+    echo "Error : Plasma themes isn't added. <<<<<<<<<<<<<<<<<" ;
 
 # Delete Unnecessary files
 sudo rm -r /usr/share/wallpapers/Next/ ;
