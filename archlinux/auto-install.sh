@@ -52,6 +52,7 @@ sudo pacman -S --noconfirm user-manager
 sudo pacman -S --noconfirm xdg-desktop-portal-kde
 sudo pacman -S --noconfirm ark
 sudo pacman -S --noconfirm baidupcs-go
+sudo pacman -S --noconfirm binutils
 sudo pacman -S --noconfirm bleachbit
 sudo pacman -S --noconfirm clipgrab
 sudo pacman -S --noconfirm code
@@ -60,7 +61,7 @@ sudo pacman -S --noconfirm dolphin
 sudo pacman -S --noconfirm dolphin-plugins
 sudo pacman -S --noconfirm ffmpegthumbs
 sudo pacman -S --noconfirm gimp
-sudo pacman -S --noconfirm git
+# sudo pacman -S --noconfirm git
 sudo pacman -S --noconfirm htop
 sudo pacman -S --noconfirm ibus
 sudo pacman -S --noconfirm kate
@@ -97,7 +98,6 @@ sudo pacman -S --noconfirm unrar
 sudo pacman -S --noconfirm xdg-user-dirs
 sudo pacman -S --noconfirm yakuake
 
-sudo pacman -S --noconfirm anydesk
 sudo pacman -S --noconfirm crow-translate
 sudo pacman -S --noconfirm megatools
 sudo pacman -S --noconfirm ibus-libzhuyin
@@ -137,6 +137,7 @@ sudo pacman -S virtualbox virtualbox-guest-utils
 # cd trizen
 # makepkg -si
 
+yay -S anydesk-bin
 yay -S kde-servicemenus-rootactions
 yay -S ms-office-online
 
