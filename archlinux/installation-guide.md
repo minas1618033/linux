@@ -21,17 +21,14 @@
     swapon /dev/nvme0n1p3
 
 ## Mount the file systems
-    mkdir -p /mnt/boot/temp
-    mount /dev/nvme0n1p1 /mnt/boot
     mount /dev/nvme0n1p2 /mnt
+    mount /dev/nvme0n1p1 /mnt/boot
 
 ## Select the mirrors & Install essential packages
     vim /etc/pacman.d/mirrorlist
         ## Taiwan
         Server = http://ftp.yzu.edu.tw/Linux/archlinux/$repo/os/$arch
     pacstrap /mnt base linux linux-firmware
-    cp /mnt/boot/* /mnt/boot/temp
-    mount /dev/nvme0n1p1 /mnt/boot
 
 ## Generate fstab
     genfstab -U /mnt >> /mnt/etc/fstab
@@ -82,7 +79,7 @@
         linux   /vmlinuz-linux
         initrd  /amd-ucode.img
         initrd  /initramfs-linux.img
-        options root={PARTUUID} rw
+        options root=PARTUUID={PARTUUID} rw
     
     nano /boot/loader/loader.conf
         default arch
@@ -90,10 +87,6 @@
         editor no
     
     bootctl --path=/boot update
-    
-    mv /mnt/boot/temp/* /mnt/boot
-    rm -r /mnt/boot/temp
-    
     (use bootctl status to check config)
     
 ## Reboot
@@ -108,8 +101,8 @@
     login
 
 ## Clone installation scripts
-    git clone https://github.com/minas1618033/archlinux.git
-    cd archlinux
+    git clone https://github.com/minas1618033/linux.git
+    cd linux/archlinux
     sh auto-install.sh
     sh auto-config.sh
     
