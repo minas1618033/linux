@@ -60,6 +60,7 @@ sudo pacman -S --noconfirm cronie
 sudo pacman -S --noconfirm dolphin
 sudo pacman -S --noconfirm dolphin-plugins
 sudo pacman -S --noconfirm ffmpegthumbs
+sudo pacman -S --noconfirm fuse
 sudo pacman -S --noconfirm gimp
 # sudo pacman -S --noconfirm git
 sudo pacman -S --noconfirm htop
