@@ -7,10 +7,10 @@
     g : create GPT partition table
     n : add new partition
     t : change partition type
-    1 EFI System
-    20 Linux System
-    19 Linux Swap
-    28 LinuxHome
+        1 EFI System
+        20 Linux System
+        19 Linux Swap
+        28 LinuxHome
 
 ## Format the partitions
     mkfs.fat -F32 /dev/nvme0n1p1
@@ -39,7 +39,7 @@
     arch-chroot /mnt
 
 ## Install essential packages
-    pacman -S amd-ucode sudo dhcpcd nano git
+    pacman -S amd-ucode sudo nano git iwd
 
 ## Set the time zone
     ln -sf /usr/share/zoneinfo/Asia/Taipei /etc/localtime
@@ -71,7 +71,7 @@
         root ALL=(ALL) ALL
         {username} ALL=(ALL) ALL
 
-## Systemd-boot Configuration
+## systemd-boot Configuration
     bootctl --path=/boot install
     blkid /dev/nvme0n1p2
     nano /boot/loader/entries/arch.conf
@@ -88,15 +88,32 @@
     
     bootctl --path=/boot update
     (use bootctl status to check config)
+
+## systemd-networkd Configuration
+    mkdir /etc/systemd/network
+    (for Ethernet) nano /etc/systemd/network/20-dhcp.network
+        [Match]
+        Name=enp1s0
+
+        [Network]
+        DHCP=ipv4
     
+    (for WiFi) nano /etc/systemd/network/25-wireless.network
+        [Match]
+        Name=wlp2s0
+
+        [Network]
+        DHCP=ipv4
+
 ## Reboot
     exit
     umount -R /mnt
     reboot
 
-## Enable DHCP
-    sudo systemctl start dhcpcd
-    sudo systemctl enable dhcpcd
+## Enable Network and DHCP
+    sudo systemctl start systemd-networkd
+    sudo systemctl start iwd
+    sudo systemctl enable iwd
     logout
     login
 
@@ -109,10 +126,9 @@
 ## Install KDE environment
     xorg-server
     nvidia
-    plasma
-    1 2 3 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 22 23 24 25 26 29 30 31 32 36 38 39 40 41 42 43
+    plasma {breeze, breeze-gtk, drkonqi, kactivitymanagerd, kde-cli-tools, kde-gtk-config, kdecoration, kdeplasma-addons, khotkeys, kinfocenter, kmenuedit, knetattach, kscreen, kscreenlocker, ksysguard, kwin, kwrited, libkscreen, libksysguard, plasma-browser-integration, plasma-desktop, plasma-integration, plasma-pa, plasma-workspace, polkit-kde-agent, sddm-kcm, systemsettings, user-manager, xdg-desktop-portal-kde
+    2 3 5 6 7 8 9 10 12 13 14 15 16 17 19 22 23 24 25 28 29 30 32 36 38 40 41 42 43}
     sudo systemctl enable sddm
-    sudo systemctl enable NetworkManager
     reboot
 
 ## Add archlinuxcn Repository
