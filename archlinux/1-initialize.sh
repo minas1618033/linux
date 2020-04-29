@@ -83,7 +83,9 @@ echo "
         read -n1 -p "     Do you want to change root into the new system? [Y/N]: " ACTION
         echo ""; done
             case $ACTION in
-            [yY]) arch-chroot /mnt ./2-configure.sh
+            [yY]) cp *.sh /mnt/opt
+                  rm -r /root/linux-master
+                  arch-chroot /mnt ./opt/2-configure.sh
                   echo "(O) 9.Change root into the new system"
                   ;;
             [nN]) echo "(X) 9.Change root into the new system"
