@@ -1,8 +1,8 @@
 # 10.Install essential packages
     if grep -q "AMD" "/proc/cpuinfo"; then
-        pacman -S --noconfirm amd-ucode sudo nano git iwd &&
+        pacman -S --noconfirm amd-ucode sudo nano git iwd
     else
-        pacman -S --noconfirm intel-ucode sudo nano git iwd &&
+        pacman -S --noconfirm intel-ucode sudo nano git iwd
     fi
     echo "(O) 10.Install essential packages" ||
   { echo "(X) 10.Install essential packages <<<<<<<<<<"; exit; }
