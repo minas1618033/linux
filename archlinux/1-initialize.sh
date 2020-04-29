@@ -11,93 +11,117 @@ echo "
       { echo "(X) 1.Connected to the Internet <<<<<<<<<<"; exit; }
 
 # 2.Update the system clock
+    echo ""
     timedatectl set-ntp true &&
         echo "(O) 2.Update the system clock" ||
       { echo "(X) 2.Update the system clock <<<<<<<<<<"; exit; }
 
-# 3.Partition the disks
+# 3.Identify UEFI/BIOS
     echo ""
-    echo "    Partition the disks"
+    if find /sys/firmware/efi >> /dev/null; then
+        echo "The computer support UEFI"
+    else
+        echo "The computer support BIOS only"
+    fi
+
+# 4.Partition the disks
+    echo ""
+    echo "Partition the disks"
     while [[ ! "$ACTION" =~ ^[yYnN]$ ]]; do
-        read -n1 -p "    Do you want to partition the disks? [Y/N]: " ACTION
+        read -n1 -p "Do you want to partition the disks? [Y/N]: " ACTION
         echo ""; done
             case $ACTION in
-            [yY]) echo "     Ctrl+C and fdisk disks"
+            [yY]) echo "Ctrl+C and fdisk disks"
                   exit ;;
-            [nN]) echo "(O) 3.Partition the disks" ;;
+            [nN]) echo "(O) 4.Partition the disks" ;;
             esac
 
-# 4.Format the partitions
-    echo "     Format the partitions"
-    echo "     1.Desktop with 1*NVME + 2*HDD"
-    echo "     2.Laptop with 1*SSD"
+# 5.Format the partitions
+    echo ""
+    echo "Format the partitions"
+    echo "1.Desktop with 1*NVME + 2*HDD"
+    echo "2.Laptop with 1*SSD"
     while [[ ! "$ACTION" =~ ^[123]$ ]]; do
-        read -n1 -p "     3.Custom : " ACTION
+        read -n1 -p "3.Custom : " ACTION
         echo ""; done
         case $ACTION in
-        1)  mkfs.fat -F32 /dev/nvme0n1p1 &&
+        1)  mkfs.vfat /dev/nvme0n1p1 &&
             mkfs.ext4 /dev/nvme0n1p2 &&
             mkfs.ext4 /dev/sda1 &&
             mkfs.ext4 /dev/sdb1 &&
-            echo "(O) 4.Format the partitions" ||
-          { echo "(X) 4.Format the partitions <<<<<<<<<<"; exit; }
+            echo "(O) 5.Format the partitions" ||
+          { echo "(X) 5.Format the partitions <<<<<<<<<<"; exit; }
             ;;
-        2)  mkfs.fat -F32 /dev/sda1
+        2)  mkfs.vfat /dev/sda1
             mkfs.ext4 /dev/sda2
             mkswap /dev/sda3
             swapon /dev/sda3
-            echo "(O) 4.Format the partitions" ||
-          { echo "(X) 4.Format the partitions <<<<<<<<<<"; exit; }
+            echo "(O) 5.Format the partitions" ||
+          { echo "(X) 5.Format the partitions <<<<<<<<<<"; exit; }
             ;;
-        3)  echo "     Ctrl+C and mkfs disks"
+        3)  echo "Ctrl+C and mkfs disks"
             exit
             ;;
         esac
 
-# 5.Mount the file systems
-    mount /dev/sda2 /mnt &&
-    mkdir /mnt/boot &&
-    mount /dev/sda1 /mnt/boot &&
-    echo "(O) 5.Mount the file systems" ||
-  { echo "(X) 5.Mount the file systems <<<<<<<<<<"; exit; }
+# 6.Mount the file systems
+    echo ""
+    case $ACTION in
+    1)  mount /dev/nvme0n1p2 /mnt &&
+        mkdir /mnt/boot &&
+        mount /dev/nvme0n1p1 /mnt/boot &&
+        echo "(O) 6.Mount the file systems" ||
+      { echo "(X) 6.Mount the file systems <<<<<<<<<<"; exit; }
+        ;;
+    2)  mount /dev/sda2 /mnt &&
+        mkdir /mnt/boot &&
+        mount /dev/sda1 /mnt/boot &&
+        echo "(O) 6.Mount the file systems" ||
+      { echo "(X) 6.Mount the file systems <<<<<<<<<<"; exit; }
+        ;;
+    esac
 
-# 6.Select the mirrors
+# 7.Select the mirrors
+    echo ""
     sed -i '7i## Taiwan' /etc/pacman.d/mirrorlist &&
     sed -i '8iServer = http://ftp.tku.edu.tw/Linux/ArchLinux/$repo/os/$arch' /etc/pacman.d/mirrorlist &&
-    echo "(O) 6.Select the mirrors" ||
-  { echo "(X) 6.Select the mirrors <<<<<<<<<<"; exit; }
+    echo "(O) 7.Select the mirrors" ||
+  { echo "(X) 7.Select the mirrors <<<<<<<<<<"; exit; }
 
-# 7.Install linux kernel & base packages
+# 8.Install linux kernel & base packages
+    echo ""
     pacstrap /mnt base linux linux-firmware &&
-    echo "(O) 7.Install linux kernel & base packages" ||
-  { echo "(X) 7.Install linux kernel & base packages <<<<<<<<<<"; exit; }
+    echo "(O) 8.Install linux kernel & base packages" ||
+  { echo "(X) 8.Install linux kernel & base packages <<<<<<<<<<"; exit; }
 
-# 8.Generate fstab
+# 9.Generate fstab
+    echo ""
     genfstab -U /mnt >> /mnt/etc/fstab &&
     cat /mnt/etc/fstab &&
-    echo "(O) 8.Generate fstab" ||
-  { echo "(X) 8.Generate fstab <<<<<<<<<<"; exit; }
+    echo "(O) 9.Generate fstab" ||
+  { echo "(X) 9.Generate fstab <<<<<<<<<<"; exit; }
     
-# 9.Change root into the new system
+# 10.Change root into the new system
+    echo ""
     while [[ ! "$ACTION" =~ ^[yYnN]$ ]]; do
-        read -n1 -p "     Do you want to change root into the new system? [Y/N]: " ACTION
+        read -n1 -p "Do you want to change root into the new system? [Y/N]: " ACTION
         echo ""; done
             case $ACTION in
             [yY]) cp /root/linux-master/archlinux/*.sh /mnt/opt
                   rm /root/script.zip
                   rm -r /root/linux-master
                   arch-chroot /mnt /opt/2-configure.sh
-                  echo "(O) 9.Change root into the new system"
+                  echo "(O) 10.Change root into the new system"
                   ;;
-            [nN]) echo "(X) 9.Change root into the new system"
+            [nN]) echo "(X) 10.Change root into the new system"
                   exit
                   ;;
-            *) echo "(X) 9.Change root into the new system"
+            *) echo "(X) 10.Change root into the new system"
                   exit
                   ;;
             esac
 
-# 19.Reboot
+# Reboot
     echo ""
     read -n1 -p "Install sucessed, do you want to reboot ? [Y/N]: " ACTION
         case $ACTION in
