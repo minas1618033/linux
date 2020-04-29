@@ -25,27 +25,23 @@ sudo pacman -S --noconfirm kde-cli-tools
 sudo pacman -S --noconfirm kde-gtk-config
 sudo pacman -S --noconfirm kdecoration
 sudo pacman -S --noconfirm kdeplasma-addons
-sudo pacman -S --noconfirm kgamma5
 sudo pacman -S --noconfirm khotkeys
 sudo pacman -S --noconfirm kinfocenter
 sudo pacman -S --noconfirm kmenuedit
 sudo pacman -S --noconfirm knetattach
 sudo pacman -S --noconfirm kscreen
 sudo pacman -S --noconfirm kscreenlocker
-sudo pacman -S --noconfirm ksshaskpass
 sudo pacman -S --noconfirm ksysguard
 sudo pacman -S --noconfirm kwin
 sudo pacman -S --noconfirm kwrited
 sudo pacman -S --noconfirm libkscreen
 sudo pacman -S --noconfirm libksysguard
-sudo pacman -S --noconfirm milou
+sudo pacman -S --noconfirm plasma-browser-integration
 sudo pacman -S --noconfirm plasma-desktop
 sudo pacman -S --noconfirm plasma-integration
-sudo pacman -S --noconfirm plasma-nm
 sudo pacman -S --noconfirm plasma-pa
 sudo pacman -S --noconfirm plasma-workspace
 sudo pacman -S --noconfirm polkit-kde-agent
-sudo pacman -S --noconfirm powerdevil
 sudo pacman -S --noconfirm sddm-kcm
 sudo pacman -S --noconfirm systemsettings
 sudo pacman -S --noconfirm user-manager
@@ -62,7 +58,6 @@ sudo pacman -S --noconfirm dolphin-plugins
 sudo pacman -S --noconfirm ffmpegthumbs
 sudo pacman -S --noconfirm fuse
 sudo pacman -S --noconfirm gimp
-# sudo pacman -S --noconfirm git
 sudo pacman -S --noconfirm htop
 sudo pacman -S --noconfirm ibus
 sudo pacman -S --noconfirm kate
@@ -153,4 +148,3 @@ yay -S ms-office-online
 # sudo sh ../../../Config/Sophos-Antivirus-free/install.sh
 
 sudo systemctl enable sddm
-sudo systemctl enable NetworkManager
