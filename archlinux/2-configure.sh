@@ -1,5 +1,9 @@
 # 10.Install essential packages
-    pacman -S amd-ucode sudo nano git iwd &&
+    if grep -q "AMD" "/proc/cpuinfo"; then
+        pacman -S --noconfirm amd-ucode sudo nano git iwd &&
+    else
+        pacman -S --noconfirm intel-ucode sudo nano git iwd &&
+    fi
     echo "(O) 10.Install essential packages" ||
   { echo "(X) 10.Install essential packages <<<<<<<<<<"; exit; }
 
@@ -36,7 +40,7 @@
   { echo "(X) 14.Set the root password <<<<<<<<<<"; exit; }
 
 # 15.Add users account
-    read -p "     Input your username : " username
+    read -p "    Input your username : " username
     useradd -m $username &&
     passwd $username &&
     sed -i '/root/a\$username ALL=(ALL) ALL' /etc/sudoers &&
@@ -45,12 +49,18 @@
 
 # 16.systemd-boot Configuration
     bootctl --path=/boot install &&
-    PARTUUID=$(blkid -o export /dev/nvme0n1p2 | grep PARTUUID) &&
+    if find /dev -maxdepth 1 -iname 'nvme0n1' >> /dev/null; then
+        PARTUUID=$(blkid -o export /dev/nvme0n1p2 | grep PARTUUID)
+    else
+        PARTUUID=$(blkid -o export /dev/sda1 | grep PARTUUID)
+    fi
+    rm /boot/loader/entries/arch.conf &&
     echo "title   Arch Linux"                 >> /boot/loader/entries/arch.conf &&
     echo "linux   /vmlinuz-linux"             >> /boot/loader/entries/arch.conf &&
     echo "initrd  /amd-ucode.img"             >> /boot/loader/entries/arch.conf &&
     echo "initrd  /initramfs-linux.img"       >> /boot/loader/entries/arch.conf &&
-    echo "options root=PARTUUID=$PARTUUID rw" >> /boot/loader/entries/arch.conf &&
+    echo "options root=$PARTUUID rw" >> /boot/loader/entries/arch.conf &&
+    sed -i '/default/d' /boot/loader/loader.conf &&
     echo "default arch" >> /boot/loader/loader.conf &&
     echo "timeout 4"    >> /boot/loader/loader.conf &&
     echo "editor no"    >> /boot/loader/loader.conf &&
@@ -85,6 +95,7 @@
 
 # 18.iwd Configuration
     if [ "$ACTION" = w ] || [ "$ACTION" = W ]; then
+        mkdir /etc/iwd
         echo "[General]"                       >> /etc/iwd/main.conf &&
         echo "EnableNetworkConfiguration=true" >> /etc/iwd/main.conf &&
         echo ""                                >> /etc/iwd/main.conf &&
