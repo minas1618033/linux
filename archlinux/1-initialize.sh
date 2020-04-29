@@ -35,14 +35,14 @@ echo "
         read -n1 -p "     3.Custom : " ACTION
         echo ""; done
         case $ACTION in
-        1)  mkfs.vfat /dev/nvme0n1p1 &&
+        1)  mkfs.fat -F32 /dev/nvme0n1p1 &&
             mkfs.ext4 /dev/nvme0n1p2 &&
             mkfs.ext4 /dev/sda1 &&
             mkfs.ext4 /dev/sdb1 &&
             echo "(O) 4.Format the partitions" ||
           { echo "(X) 4.Format the partitions <<<<<<<<<<"; exit; }
             ;;
-        2)  mkfs.vfat /dev/sda1
+        2)  mkfs.fat -F32 /dev/sda1
             mkfs.ext4 /dev/sda2
             mkswap /dev/sda3
             swapon /dev/sda3
