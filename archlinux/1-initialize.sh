@@ -83,7 +83,7 @@ echo "
         read -n1 -p "     Do you want to change root into the new system? [Y/N]: " ACTION
         echo ""; done
             case $ACTION in
-            [yY]) cp *.sh /mnt/opt
+            [yY]) cp /root/linux-master/archlinux/*.sh /mnt/opt
                   rm /root/script.zip
                   rm -r /root/linux-master
                   arch-chroot /mnt /opt/2-configure.sh
