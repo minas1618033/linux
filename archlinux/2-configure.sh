@@ -49,15 +49,19 @@
 
 # 16.systemd-boot Configuration
     bootctl --path=/boot install &&
-    if find /dev -maxdepth 1 -iname 'nvme0n1' >> /dev/null; then
+    if find /dev/nvme0n1 >> /dev/null; then
         PARTUUID=$(blkid -o export /dev/nvme0n1p2 | grep PARTUUID)
     else
         PARTUUID=$(blkid -o export /dev/sda1 | grep PARTUUID)
     fi
-    rm /boot/loader/entries/arch.conf &&
+    rm /boot/loader/entries/arch.conf
     echo "title   Arch Linux"                 >> /boot/loader/entries/arch.conf &&
     echo "linux   /vmlinuz-linux"             >> /boot/loader/entries/arch.conf &&
-    echo "initrd  /amd-ucode.img"             >> /boot/loader/entries/arch.conf &&
+    if grep -q "AMD" "/proc/cpuinfo"; then
+        echo "initrd  /amd-ucode.img"         >> /boot/loader/entries/arch.conf
+    else
+        echo "initrd  /intel-ucode.img"         >> /boot/loader/entries/arch.conf
+    fi
     echo "initrd  /initramfs-linux.img"       >> /boot/loader/entries/arch.conf &&
     echo "options root=$PARTUUID rw" >> /boot/loader/entries/arch.conf &&
     sed -i '/default/d' /boot/loader/loader.conf &&
