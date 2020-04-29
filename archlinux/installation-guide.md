@@ -1,3 +1,13 @@
+## Download install script
+    curl -L https://github.com/minas1618033/linux/archive/master.zip --output scripts.zip
+    bsdtar -x -f scripts.zip
+    chmod +x /root/linux-master/archlinux/*.sh
+    sh /root/linux-master/archlinux/1-initialize.sh
+
+## Connect to the wireless LAN by netctl
+    wifi-menu
+    (ip link set wlan0 up)
+
 ## Update the system clock
     timedatectl set-ntp true
 
@@ -13,7 +23,7 @@
         28 LinuxHome
 
 ## Format the partitions
-    mkfs.fat -F32 /dev/nvme0n1p1
+    mkfs.vfat /dev/nvme0n1p1
     mkfs.ext4 /dev/nvme0n1p2
     mkfs.ext4 /dev/sda1
     mkfs.ext4 /dev/sdb1
@@ -22,6 +32,7 @@
 
 ## Mount the file systems
     mount /dev/nvme0n1p2 /mnt
+    mkdir /mnt/boot
     mount /dev/nvme0n1p1 /mnt/boot
 
 ## Select the mirrors & Install essential packages
@@ -39,7 +50,7 @@
     arch-chroot /mnt
 
 ## Install essential packages
-    pacman -S amd-ucode sudo nano git iwd
+    pacman -S amd-ucode sudo nano git (iwd)
 
 ## Set the time zone
     ln -sf /usr/share/zoneinfo/Asia/Taipei /etc/localtime
@@ -94,16 +105,20 @@
     (for Ethernet) nano /etc/systemd/network/20-dhcp.network
         [Match]
         Name=enp1s0
-
         [Network]
         DHCP=ipv4
     
     (for WiFi) nano /etc/systemd/network/25-wireless.network
         [Match]
         Name=wlp2s0
-
         [Network]
         DHCP=ipv4
+
+    nano /etc/iwd/main.conf
+        [General]
+        EnableNetworkConfiguration=true
+        [Network]
+        NameResolvingService=systemd
 
 ## Reboot
     exit
@@ -112,8 +127,13 @@
 
 ## Enable Network and DHCP
     sudo systemctl start systemd-networkd
-    sudo systemctl start iwd
-    sudo systemctl enable iwd
+    sudo systemctl enable systemd-networkd
+    sudo systemctl start systemd-resolved
+    sudo systemctl enable systemd-resolved
+    ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+    sudo mkdir /etc/systemd/resolved.conf.d
+    echo "[Resolve]" >> /etc/systemd/resolved.conf.d/dnssec.conf
+    echo "DNSSEC=false" >> /etc/systemd/resolved.conf.d/dnssec.conf
     logout
     login
 
