@@ -84,8 +84,9 @@ echo "
         echo ""; done
             case $ACTION in
             [yY]) cp *.sh /mnt/opt
+                  rm /root/script.zip
                   rm -r /root/linux-master
-                  arch-chroot /mnt ./opt/2-configure.sh
+                  arch-chroot /mnt /opt/2-configure.sh
                   echo "(O) 9.Change root into the new system"
                   ;;
             [nN]) echo "(X) 9.Change root into the new system"
