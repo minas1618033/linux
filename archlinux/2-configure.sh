@@ -52,7 +52,7 @@
     if find /dev/nvme0n1 >> /dev/null; then
         PARTUUID=$(blkid -o export /dev/nvme0n1p2 | grep PARTUUID)
     else
-        PARTUUID=$(blkid -o export /dev/sda1 | grep PARTUUID)
+        PARTUUID=$(blkid -o export /dev/sda2 | grep PARTUUID)
     fi
     rm /boot/loader/entries/arch.conf
     echo "title   Arch Linux"                 >> /boot/loader/entries/arch.conf &&
