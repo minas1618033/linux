@@ -1,6 +1,6 @@
 # 10.Install essential packages
     if grep -q "AMD" "/proc/cpuinfo"; then
-        pacman -S --noconfirm amd-ucode sudo nano git iwd
+        pacman -S --noconfirm amd-ucode sudo nano git
     else
         pacman -S --noconfirm intel-ucode sudo nano git iwd
     fi
@@ -8,12 +8,14 @@
   { echo "(X) 10.Install essential packages <<<<<<<<<<"; exit; }
 
 # 11.Set the time zone
+    echo ""
     ln -sf /usr/share/zoneinfo/Asia/Taipei /etc/localtime &&
     hwclock --systohc &&
     echo "(O) 11.Set the time zone" ||
   { echo "(X) 11.Set the time zone <<<<<<<<<<"; exit; }
 
 # 12.Localization
+    echo ""
     sed -i '/#en_US.UTF-8 UTF-8/a\en_US.UTF-8 UTF-8' /etc/locale.gen &&
     sed -i '/#en_US.UTF-8 UTF-8/d' /etc/locale.gen &&
     sed -i '/#zh_TW.UTF-8 UTF-8/a\zh_TW.UTF-8 UTF-8' /etc/locale.gen &&
@@ -25,6 +27,7 @@
   { echo "(X) 12.Localization <<<<<<<<<<"; exit; }
 
 # 13.Network Configuration
+    echo ""
     read -p "     Input your hostname : " hostname
     echo "$hostname" >> /etc/hostname &&
     echo "127.0.0.1   localhost" >> /etc/hosts &&
@@ -34,12 +37,14 @@
   { echo "(X) 13.Network Configuration <<<<<<<<<<"; exit; }
 
 # 14.Set the root password
+    echo ""
     echo "Input root password" &&
     passwd &&
     echo "(O) 14.Set the root password" ||
   { echo "(X) 14.Set the root password <<<<<<<<<<"; exit; }
 
 # 15.Add users account
+    echo ""
     read -p "    Input your username : " username
     useradd -m $username &&
     passwd $username &&
@@ -48,6 +53,7 @@
   { echo "(X) 15.Add users account <<<<<<<<<<"; exit; }
 
 # 16.systemd-boot Configuration
+    echo ""
     bootctl --path=/boot install &&
     if find /dev/nvme0n1 >> /dev/null; then
         PARTUUID=$(blkid -o export /dev/nvme0n1p2 | grep PARTUUID)
@@ -74,6 +80,7 @@
     bootctl status to check config
     
 # 17.systemd-networkd Configuration
+    echo ""
     mkdir /etc/systemd/network
     while [[ ! "$ACTION" =~ ^[eEwW]$ ]]; do
         read -n1 -p "     Which is your connection, Ethernet or WiFi ? [E/W]: " ACTION
@@ -98,6 +105,7 @@
             esac
 
 # 18.iwd Configuration
+    echo ""
     if [ "$ACTION" = w ] || [ "$ACTION" = W ]; then
         mkdir /etc/iwd
         echo "[General]"                       >> /etc/iwd/main.conf &&
