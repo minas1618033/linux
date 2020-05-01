@@ -83,6 +83,7 @@ sudo pacman -S --noconfirm opera
 sudo pacman -S --noconfirm opera-ffmpeg-codecs
 sudo pacman -S --noconfirm p7zip
 sudo pacman -S --noconfirm partitionmanager
+sudo pacman -S --noconfirm pcsclite
 sudo pacman -S --noconfirm profile-sync-daemon
 sudo pacman -S --noconfirm qmmp
 sudo pacman -S --noconfirm qt5-imageformats
