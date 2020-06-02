@@ -16,6 +16,7 @@ echo
 
 sudo pacman -S --noconfirm xorg-server
 sudo pacman -S --noconfirm nvidia
+sudo pacman -S --noconfirm gnu-free-fonts
 sudo pacman -S --noconfirm bluedevil
 sudo pacman -S --noconfirm breeze
 sudo pacman -S --noconfirm breeze-gtk
@@ -137,8 +138,9 @@ sudo pacman -S virtualbox virtualbox-guest-utils
 yay -S anydesk-bin
 yay -S kde-servicemenus-rootactions
 yay -S ms-office-online
+yay -S powerdevil-light
 
-# trizen -S imagewriter
+# trizen -S isoimagewriter
 # trizen -S kmarkdownwebview
 # trizen -S ksnip
 # trizen -S megacmd-bin
