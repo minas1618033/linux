@@ -21,32 +21,21 @@ sudo pacman -S --noconfirm bluedevil
 sudo pacman -S --noconfirm breeze
 sudo pacman -S --noconfirm breeze-gtk
 sudo pacman -S --noconfirm drkonqi
-sudo pacman -S --noconfirm kactivitymanagerd
 sudo pacman -S --noconfirm kde-cli-tools
 sudo pacman -S --noconfirm kde-gtk-config
-sudo pacman -S --noconfirm kdecoration
 sudo pacman -S --noconfirm kdeplasma-addons
 sudo pacman -S --noconfirm khotkeys
 sudo pacman -S --noconfirm kinfocenter
-sudo pacman -S --noconfirm kmenuedit
-sudo pacman -S --noconfirm knetattach
 sudo pacman -S --noconfirm kscreen
-sudo pacman -S --noconfirm kscreenlocker
 sudo pacman -S --noconfirm ksysguard
-sudo pacman -S --noconfirm kwin
 sudo pacman -S --noconfirm kwrited
-sudo pacman -S --noconfirm libkscreen
-sudo pacman -S --noconfirm libksysguard
 sudo pacman -S --noconfirm plasma-browser-integration
 sudo pacman -S --noconfirm plasma-desktop
 sudo pacman -S --noconfirm plasma-integration
 sudo pacman -S --noconfirm plasma-pa
 sudo pacman -S --noconfirm plasma-workspace
-sudo pacman -S --noconfirm polkit-kde-agent
 sudo pacman -S --noconfirm sddm-kcm
-sudo pacman -S --noconfirm systemsettings
 sudo pacman -S --noconfirm user-manager
-sudo pacman -S --noconfirm xdg-desktop-portal-kde
 sudo pacman -S --noconfirm ark
 sudo pacman -S --noconfirm baidupcs-go
 sudo pacman -S --noconfirm binutils
@@ -57,7 +46,6 @@ sudo pacman -S --noconfirm cronie
 sudo pacman -S --noconfirm dolphin
 sudo pacman -S --noconfirm dolphin-plugins
 sudo pacman -S --noconfirm ffmpegthumbs
-sudo pacman -S --noconfirm fuse
 sudo pacman -S --noconfirm gimp
 sudo pacman -S --noconfirm htop
 sudo pacman -S --noconfirm ibus
@@ -70,6 +58,7 @@ sudo pacman -S --noconfirm kdialog
 sudo pacman -S --noconfirm keepassxc
 sudo pacman -S --noconfirm kfind
 sudo pacman -S --noconfirm kget
+sudo pacman -S --noconfirm kio-fuse
 sudo pacman -S --noconfirm kolourpaint
 sudo pacman -S --noconfirm kompare
 sudo pacman -S --noconfirm konsole
@@ -106,12 +95,12 @@ sudo pacman -S --noconfirm safeeyes-git
 sudo pacman -S --noconfirm unzip-iconv
 sudo pacman -S --noconfirm wine-x64
 sudo pacman -S --noconfirm yay
-sudo pacman -S virtualbox virtualbox-guest-utils
+sudo pacman -S virtualbox
 
+# sudo pacman -S --noconfirm caprine
 # sudo pacman -S --noconfirm cups
 # sudo pacman -S --noconfirm exfat-utils
 # sudo pacman -S --noconfirm faad2 (qmmp)
-# sudo pacman -S --noconfirm grub-theme-vimix
 # sudo pacman -S --noconfirm k3b
 # sudo pacman -S --noconfirm kaccounts-providers
 # sudo pacman -S --noconfirm kwayland-integration
@@ -124,11 +113,10 @@ sudo pacman -S virtualbox virtualbox-guest-utils
 # sudo pacman -S --noconfirm opusfile (qmmp)
 # sudo pacman -S --noconfirm pulseaudio-alsa
 # sudo pacman -S --noconfirm pulseaudio-bluetooth
-# sudo pacman -S --noconfirm udiskie
 # sudo pacman -S --noconfirm unzip-natspec
-# sudo pacman -S --noconfirm usb_modeswitch
 # sudo pacman -S --noconfirm wildmidi (qmmp)
 # sudo pacman -S --noconfirm wine
+# sudo pacman -S --noconfirm xdg-desktop-portal-kde
 # sudo pacman -S --noconfirm youtube-dl
 
 # git clone https://aur.archlinux.org/trizen.git
@@ -140,11 +128,11 @@ yay -S kde-servicemenus-rootactions
 yay -S ms-office-online
 yay -S powerdevil-light
 
-# trizen -S isoimagewriter
-# trizen -S kmarkdownwebview
-# trizen -S ksnip
-# trizen -S megacmd-bin
-# trizen -S stacer
+# yay -S isoimagewriter
+# yay -S kmarkdownwebview
+# yay -S ksnip
+# yay -S megacmd-bin
+# yay -S stacer
 
 # sudo pacman -Rsn --noconfirm xdg-user-dirs
 
