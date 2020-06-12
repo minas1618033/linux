@@ -12,7 +12,7 @@ sudo systemctl enable fstrim.timer &&
     echo "OK, SSD Trim is Enabled." ||
     echo "Error : SSD Trim can't be turn on.    <<<<<<<<<<<<<<" ;
 
-# Automount HDD (sudo blkid to find UUID) ---------------------------------------------------------
+# Automount HDD ('ls -lh /dev/disk/by-uuid' or 'lsblk -f' to find UUID) ---------------------------------------------------------
 
 #    # /dev/nvme0n1p1
 #    UUID={UUID} /boot/efi vfat rw,noatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 2
@@ -44,7 +44,7 @@ Exec = /usr/bin/bootctl update" >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
 #       echo "OK, Automount GSuite is configured." ||
 #       echo "Error : Automount GSuite configuration is wrong. <<<<<<<<<<<<<<<" ;
 
-# Turn on NumLock in SDDM -------------------------------------------------------------------------
+# Turn on HiDPI & NumLock in SDDM -------------------------------------------------------------------------
 
 sudo echo "[General]
 Numlock=on
@@ -52,8 +52,8 @@ Numlock=on
 [X11]
 EnableHiDPI=true
 ServerArguments=-nolisten tcp -dpi 120" >> /etc/sddm.conf &&
-    echo "OK, NumLock in SDDM is enabled." ||
-    echo "Error : NumLock can't be turn on. <<<<<<<<<<<<<<<<<<" ;
+    echo "OK, HiDPI & NumLock in SDDM is enabled." ||
+    echo "Error : HiDPI & NumLock can't be turn on. <<<<<<<<<<<<<<<<<<" ;
  
 # Set iBus input method ---------------------------------------------------------------------------
 
@@ -137,13 +137,14 @@ sudo cp -r ./config/WifiAudio/ /usr/share/ &&
 
 # Set Wine 7zip library (20.02) -------------------------------------------------------------------
 
-wine64 7z &&
-cp ./config/7-zip/7z.dll ~/.wine/drive_c/windows/ &&
-cp ./config/7-zip/7z.exe ~/.wine/drive_c/windows/ &&
+mkdir -p ~/.wine/drive_c/windows/ &&
+cp ./config/7-zip/* ~/.wine/drive_c/windows/ &&
     echo "OK, Wine is configured." ||
     echo "Error : Wine configuration is wrong. <<<<<<<<<<<<<<<" ;
 
 # Add Custom Command ------------------------------------------------------------------------------
+
+echo "alias script-list='cat ~/Documents/scripts/.list'" >> ~/.bashrc &&
 
 echo "alias count='sh ~/Documents/scripts/count.sh'
 alias cc='sh ~/Documents/scripts/check.sh'
