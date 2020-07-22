@@ -1,298 +1,617 @@
+#######################################################################################################################
+##                                                    Arch Linux                                                     ##
+##                                              INSTALLATION ASSISTANT                                       v1.0.0  ##
+#######################################################################################################################
+#
+# This file is a script for installing Arch Linux using the live system booted from an official installation image on my PC & NB. 
+#
+#######################################################################################################################
+###################################################   DIRECTORY   #####################################################
+#######################################################################################################################
+# |
+# |STEP0 Pre-installation
+# |-- 0-1.Download the image
+# |-- 0-2.Verify the image signature
+# |-- 0-3.Prepare an installation medium
+# |-- 0-4.Reboot from the live usb
+# |-- 0-5.Check the internet status
+# |-- 0-6.Download the installation script
+# |-- 0-7.Run the script
+# |
+# |STEP1 Install the system
+# |-- 1-1.Connected to the Internet
+# |-- 1-2.Update the system clock
+# |-- 1-3.Identify UEFI/BIOS
+# |-- 1-4.Partition the disks
+# |-- 1-5.Mount the file systems
+# |-- 1-6.Select the mirrors
+# |-- 1-7.Install linux kernel & base packages
+# |-- 1-8.Generate fstab
+# |-- 1-9.Change root into the new system
+# |
+# |STEP2 Configure the system
+# |-- 2-1.Install essential packages
+# |-- 2-2.Set the time zone
+# |-- 2-3.Localization
+# |-- 2-4.Network Configuration
+# |-- 2-5.Set the root password
+# |-- 2-6.Add users account
+# |-- 2-7.systemd-boot Configuration
+# |-- 2-8.systemd-networkd Configuration
+# |-- 2-9.iwd Configuration
+# |
+# |STEP3 Configure the applications
+# |-- 3-1.Enable network service
+# |-- 3-2.Enable SSD Trim
+# |-- 3-3.Automount disk partitions
+# |-- 3-4.Add archlinuxcn repo
+# |-- 3-5.Install GPU driver, font and plasma desktop
+# |-- 3-6.Install applications from official repo
+# |-- 3-7.Install applications from archlinuxcn repo
+# |-- 3-8.Install applications from aur repo
+# |-- 
+# |-- 
+# |-- 
+# |-- 
+# |-- 
+# |-- 
+# |-- 
+
+#######################################################################################################################
+############################################### STEP0 Pre-installation ################################################
+#######################################################################################################################
+#
+#   0-1.Download the image from https://www.archlinux.org/download/
+#
+#   0-2.Verify the image signature by
+#       # gpg --keyserver-options auto-key-retrieve --verify archlinux-version-x86_64.iso.sig
+#         or
+#       # pacman-key -v archlinux-version-x86_64.iso.sig
+#
+#   0-3.Prepare an installation medium
+#       # dd bs=4M if=/path/to/archlinux.iso of=/dev/sdX status=progress && sync
+#
+#   0-4.Reboot from the live usb
+#
+#   0-5.Check the internet status
+#       if use wireless network,use iwd to connect.
+#       # iwctl station wlan0 connect CHT_24.G
+#
+#   0-6.Download the installation script
+#       curl -o installation.sh https://raw.githubusercontent.com/minas1618033/linux/master/archlinux/installation.sh 
+#
+#   0-7.Run the script
+#
+#######################################################################################################################
+############################################## STEP1 Install the system ###############################################
+#######################################################################################################################
+
 clear
+umount -R /mnt >> /dev/null 2>&1
+find ./log >> /dev/null 2>&1 && rm -i ./log
 echo "
-          Arch Linux install script
-
---------------------------------------------
-
+             $(tput setab 6)      Arch Linux      $(tput sgr 0)
+             $(tput setaf 6)INSTALLATION ASSISTANT$(tput setaf 242)
+                                           1.0.0
+------------------------------------------------
+      Copyright (c) 2020-2021 Zelko Rocha$(tput sgr 0)
 "
-# 0.Download installation script
-# 	(wireless network) ip link set wlan0 down
-# 	(wireless network) wifi-menu
-# 	systemctl disable systemd-resolved
-# 	rm /etc/resolv.conf # removes symlink to /run
-# 	echo "nameserver 168.95.192.1" >> /etc/resolv.conf
-# 	curl -L https://github.com/minas1618033/linux/archive/master.zip --output scripts.zip
-# 	bsdtar -x -f scripts.zip
-# 	chmod +x /root/linux-master/archlinux/*.sh
-# 	sh /root/linux-master/archlinux/installation-script.sh
+# 1-1.Connected to the Internet
+    ping -c 2 www.google.com > /dev/null &&
+        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-1.Connected to the Internet" | tee -a ./log ||
+        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-1.Connected to the Internet" | tee -a ./log 
 
-	printf "   1.Normal Insatllation\n   2.Custom Installation\n   \n"
+# 1-2.Update the system clock
+    echo
+    timedatectl set-ntp true &&
+        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-2.Update the system clock" | tee -a ./log ||
+        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-2.Update the system clock" | tee -a ./log ;
 
-	function selection {
-		ESC=$( printf "\033")
-		cursor_blink_on()  { printf "$ESC[?25h"; }
-		cursor_blink_off() { printf "$ESC[?25l"; }
-		cursor_to()        { printf "$ESC[$1;${2:-1}H"; }
-		print_option()     { printf "   $1 "; }
-		print_selected()   { printf "  $ESC[7m $1 $ESC[27m"; }
-		get_cursor_row()   { IFS=';' read -sdR -p $'\E[6n' ROW COL; echo ${ROW#*[}; }
-		key_input()        { read -s -n3 key 2>/dev/null >&2
-							 if [[ $key = $ESC[A ]]; then echo up;    fi
-							 if [[ $key = $ESC[B ]]; then echo down;  fi
-							 if [[ $key = ""     ]]; then echo enter; fi; }
+# 1-3.Identify UEFI/BIOS
+    echo
+    find /sys/firmware/efi >> /dev/null 2>&1 &&
+        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-3.The computer support UEFI" | tee -a ./log ||
+        echo "( $(tput setaf 2)!$(tput sgr 0) ) 1-3.The computer support BIOS only" | tee -a ./log
+    
+# 1-4.Partition the disks
+    echo
+    echo "   1.Default A ( Desktop: 1*NVME + 2*HDD )"
+    echo "   2.Default B ( Laptop: 1*SSD)"
+    echo "   3.Manual partitioning"
+    echo
+    read -p ":: Select disks PARTITIONING configuration : " PARTITION
+    case $PARTITION in
+        1)  echo
+            echo "   1.Format ROOT partition only"
+            echo "   2.Format ALL partitions"
+            echo "   3.Repartition and format all partitions"
+            echo
+            read -p ":: Select disks FORMATING configuration : " ACTION
+            echo
+            case $ACTION in
+                1)  mkfs.vfat /dev/nvme0n1p1 &&
+                    mkfs.ext4 /dev/nvme0n1p2 &&
+                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
+                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log
+                    ;;
+                2)  mkfs.vfat /dev/nvme0n1p1 &&
+                    mkfs.ext4 /dev/nvme0n1p2 &&
+                    mkfs.ext4 /dev/sda1 &&
+                    mkfs.ext4 /dev/sdb1
+                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
+                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log
+                    ;;
+                3)  parted -s /dev/nvme0n1 mklabel gpt &&
+                    parted -s /dev/nvme0n1 mkpart "esp" fat32 '0%' 300MB &&
+                    parted -s /dev/nvme0n1 set 1 esp on &&
+                    parted -s /dev/nvme0n1 mkpart "root" ext4 300MiB '100%' &&
+                    parted -s /dev/sda mklabel gpt &&
+                    parted -s /dev/sda mkpart "2000G" ext4 '0%' '100%' &&
+                    parted -s /dev/sdb mklabel gpt &&
+                    parted -s /dev/sdb mkpart "500G" ext4 '0%' '100%' &&
+                    mkfs.vfat /dev/nvme0n1p1 &&
+                    mkfs.ext4 /dev/nvme0n1p2 &&
+                    mkfs.ext4 /dev/sda1 &&
+                    mkfs.ext4 /dev/sdb1 &&
+                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
+                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log
+                    ;;
+            esac
+            ;;
+        2)  echo
+            echo "   1.Format ROOT partition only"
+            echo "   2.Repartition and format all partitions"
+            echo
+            read -p ":: Select disks FORMATING configuration : " ACTION
+            echo
+            case $ACTION in
+                1)  mkfs.vfat /dev/sda1 &&
+                    mkfs.ext4 /dev/sda2
+                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
+                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log
+                    ;;
+                2)  parted -s /dev/sda mklabel gpt &&
+                    parted -s /dev/sda mkpart "esp" fat32 '0%' 300MB &&
+                    parted -s /dev/sda set 1 esp on &&
+                    parted -s /dev/sda mkpart "root" ext4 300MiB '100%' &&
+                    mkfs.vfat /dev/sda1 &&
+                    mkfs.ext4 /dev/sda2 &&
+                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
+                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log
+                    ;;
+            esac
+            ;;
+        3)  parted
+            exit
+            ;;
+    esac
 
-		# initially print empty new lines (scroll down if at bottom of screen)
-		for opt; do printf "\n"; done
+# 1-5.Mount the file systems
+    echo
+    case $PARTITION in
+    1)  mount /dev/nvme0n1p2 /mnt &&
+        mkdir /mnt/boot &&
+        mount /dev/nvme0n1p1 /mnt/boot &&
+            echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log ||
+            echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log
+        ;;
+    2)  mount /dev/sda2 /mnt &&
+        mkdir /mnt/boot &&
+        mount /dev/sda1 /mnt/boot &&
+            echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log ||
+            echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log
+        ;;
+    esac
 
-		# determine current screen position for overwriting the options
-		local lastrow=`get_cursor_row`
-		local startrow=$(($lastrow - $#))
+# 1-6.Select the mirrors
+    echo
+    sed -i '11iServer = http://archlinux.ccns.ncku.edu.tw/archlinux/$repo/os/$arch' /etc/pacman.d/mirrorlist &&
+    sed -i '12iServer = http://archlinux.cs.nctu.edu.tw/$repo/os/$arch' /etc/pacman.d/mirrorlist &&
+        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-6.Select the mirrors" | tee -a ./log ||
+        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-6.Select the mirrors" | tee -a ./log
 
-		# ensure cursor and input echoing back on upon a ctrl+c during read -s
-		trap "cursor_blink_on; stty echo; printf '\n'; exit" 2
-		cursor_blink_off
+# 1-7.Install linux kernel & base packages
+    echo
+    pacstrap /mnt base linux linux-firmware &&
+        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-7.Install linux kernel & base packages" | tee -a ./log ||
+        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-7.Install linux kernel & base packages" | tee -a ./log
 
-		local selected=0
-		while true; do
-			# print options by overwriting the last lines
-			local idx=0
-			for opt; do
-				cursor_to $(($startrow + $idx))
-				if [ $idx -eq $selected ]; then
-					print_selected "$opt"
-				else
-					print_option "$opt"
-				fi
-				((idx++))
-			done
+# 1-8.Generate fstab
+    echo
+    genfstab -U /mnt >> /mnt/etc/fstab &&
+    cat /mnt/etc/fstab &&
+        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-8.Generate fstab" | tee -a ./log ||
+        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-8.Generate fstab" | tee -a ./log
 
-			# user key control
-			case `key_input` in
-				enter) break;;
-				up)    ((selected--));
-					   if [ $selected -lt 0 ]; then selected=$(($# - 1)); fi;;
-				down)  ((selected++));
-					   if [ $selected -ge $# ]; then selected=0; fi;;
-			esac
-		done
-	}
+# 1-9.Change root into the new system
+    echo
+    cat ./log
+    echo
+    while [[ ! "$ACTION" =~ ^[yYnN]$ ]]; do
+        read -n1 -p ":: Do you want to change root into the new system? [Y/N]: " ACTION
+        echo ; done
+            case $ACTION in
+            [yY]) awk '/EOF/{f=0} f; /EOF/{f=1}' installation.sh >> /mnt/installation-step2.sh
+            
+#######################################################################################################################
+############################################# STEP2 Configure the system ##############################################
+#######################################################################################################################
 
-# 1.Connect to the Internet
-	function step1 {
-		if ping -c 3 8.8.8.8 > /dev/null 2>&1; then
-			if ping -c 3 www.google.com > /dev/null 2>&1; then
-				echo "(O) 1.Connected to the Internet"
-				step2
-			else
-				systemctl disable systemd-resolved
-				rm /etc/resolv.conf # removes symlink to /run
-				echo "nameserver 168.95.192.1" >> /etc/resolv.conf
-				echo "DNS server is unavailable"
-				echo "Try to disable systemd-resolved & Reset DNS resolver"
-				if ping -c 3 www.google.com > /dev/null 2>&1; then
-					echo "(O) 1.Connected to the Internet"
-					step2
-				else
-					echo "(X) 1.Connected to the Internet, but DNS server is still unavailable <<<<<<<<<<"
-					exit
-				fi
-			fi
-		else
-			if lspci | grep -i wireless > /dev/null 2>&1; then
-				ip link set wlan0 down
-				systemctl disable systemd-resolved
-				rm /etc/resolv.conf # removes symlink to /run
-				echo "nameserver 168.95.192.1" >> /etc/resolv.conf
-				wifi-menu
-				if ping -c 3 www.google.com > /dev/null 2>&1; then
-					echo "(O) 1.Connected to the Internet"
-					step2
-				else
-					echo "(X) 1.Connected to the Internet, but DNS server is still unavailable <<<<<<<<<<"
-					exit
-				fi
-			else
-				echo "(X) 1.Connection error, the network is unavailable <<<<<<<<<<"
-				exit
-			fi
-		fi
-	}
+                  :<<EOF
+                    echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-9.Change root into the new system" | tee -a ./log
+                    
+                    # 2-1.Install essential packages
+                        if grep -q "AMD" "/proc/cpuinfo"; then
+                            pacman -S --noconfirm amd-ucode sudo nano git
+                        else
+                            pacman -S --noconfirm intel-ucode sudo nano git iwd
+                        fi
+                            echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-1.Install essential packages" | tee -a ./log ||
+                            echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-1.Install essential packages" | tee -a ./log
 
-# 2.Update the system clock
-	function step2 {
-		echo
-		timedatectl set-ntp true &&
-		echo "(O) 2.Update the system clock" && step3 || { 
-		echo "(X) 2.Update the system clock <<<<<<<<<<"; exit; }
-	}
+                    # 2-2.Set the time zone
+                        echo
+                        ln -sf /usr/share/zoneinfo/Asia/Taipei /etc/localtime &&
+                        hwclock --systohc &&
+                            echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-2.Set the time zone" | tee -a ./log ||
+                            echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-2.Set the time zone" | tee -a ./log
 
-# 3.Identify UEFI/BIOS
-	function step3 {
-		echo
-		find /sys/firmware/efi >> /dev/null &&
-		echo "(O) 3.The computer support UEFI" ||
-		echo "(O) 3.The computer support BIOS only"
-		step4
-	}
+                    # 2-3.Localization
+                        echo
+                        sed -i '/#en_US.UTF-8 UTF-8/a\en_US.UTF-8 UTF-8' /etc/locale.gen &&
+                        sed -i '/#en_US.UTF-8 UTF-8/d' /etc/locale.gen &&
+                        sed -i '/#zh_TW.UTF-8 UTF-8/a\zh_TW.UTF-8 UTF-8' /etc/locale.gen &&
+                        sed -i '/#zh_TW.UTF-8 UTF-8/d' /etc/locale.gen &&
+                        locale-gen &&
+                        echo "LANG=en_US.UTF-8" >> /etc/locale.conf &&
+                        echo "LC_CTYPE="zh_TW.UTF-8"" >> /etc/locale.conf &&
+                            echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-3.Localization" | tee -a ./log ||
+                            echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-3.Localization" | tee -a ./log
 
-# 4.Partition & Format the disks
-	function step4 {
-		while true; do
-			echo
-			echo "Select your disks partition configuration :"
-			echo
-			options=("Config 1 (For Desktop 1*NVME + 2*HDD)" "Config 2 (For Laptop 1*SSD)" "Custom partitioning")
-			selection "${options[@]}"
-			choice=$?
-			case $choice in
-				0)  step4a && 
-					echo "(O) 4.Partition & foemat the disks" && 
-					step5
-					;;
-				1)  step4b && 
-					echo "(O) 4.Partition & foemat the disks" && 
-					step5
-					;;
-				2)  gdisk && 
-					step5
-					;;
-			esac
-			break
-		done
+                    # 2-4.Network Configuration
+                        echo
+                        read -p ":: Input your hostname : " hostname
+                        echo "$hostname" >> /etc/hostname &&
+                        echo "127.0.0.1   localhost" >> /etc/hosts &&
+                        echo "::1         localhost" >> /etc/hosts &&
+                        echo "127.0.1.1   $hostname.localdomain  $hostname" >> /etc/hosts &&
+                            echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-4.Network Configuration" | tee -a ./log ||
+                            echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-4.Network Configuration" | tee -a ./log
 
-		function step4a {
-			echo "Config 1 (1*NVME + 2*HDD):"
-			echo
-			options=("Format ROOT partition only" "Format ALL partitions" "Repartition and format all partitions" "    " "Back")
-			selection "${options[@]}"
-			choice=$?
-			case $choice in
-				0)  mkfs.vfat /dev/nvme0n1p1 &&
-					mkfs.ext4 /dev/nvme0n1p2
-					;;
-				1)  mkfs.vfat /dev/nvme0n1p1 &&
-					mkfs.ext4 /dev/nvme0n1p2 &&
-					mkfs.ext4 /dev/sda1 &&
-					mkfs.ext4 /dev/sdb1
-					;;
-				2)  parted rm 1
-					parted rm 2
-					parted rm 3
-					parted rm 4
-					parted /dev/nvme0n1 mklabel gpt mkpart "EFI system partition" fat32 1MiB 300MiB
-					parted set 1 esp on
-					parted /dev/nvme0n1 mkpart "Root" ext4 300MiB '100%'
-					parted set 2 root on
-					parted -a optimal /dev/sda mklabel gpt mkpart "Western Digital" ext4 1MiB '100%'
-					parted -a optimal /dev/sdb mklabel gpt mkpart "Toshiba" ext4 1MiB '100%'
-					mkfs.vfat /dev/nvme0n1p1
-					mkfs.ext4 /dev/nvme0n1p2
-					mkfs.ext4 /dev/sda1
-					mkfs.ext4 /dev/sdb1
-					;;
-				3)  continue
-					;;
-				4)  continue
-					;;
-			esac
-		}
+                    # 2-5.Set the root password
+                        echo
+                        echo ":: Set ROOT account password" &&
+                        passwd &&
+                            echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-5.Set the root password" | tee -a ./log ||
+                            echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-5.Set the root password" | tee -a ./log
 
-		function step4b {
-			echo "Config 2 (1*SSD):"
-			echo
-			options=("Format ALL partitions" "Repartition and format all partitions" "    " "Back")
-			selection "${options[@]}"
-			choice=$?
-			case $choice in
-				0)  mkfs.vfat /dev/sda1 &&
-					mkfs.ext4 /dev/sda2
-					;;
-				1)  parted rm 1
-					parted rm 2
-					parted /dev/sda mklabel gpt mkpart "EFI system partition" fat32 1MiB 300MiB
-					parted set 1 esp on
-					parted /dev/sda mkpart "Root" ext4 300MiB '100%'
-					parted set 2 root on
-					mkfs.vfat /dev/sda1
-					mkfs.ext4 /dev/sda2
-					;;
-				2)  continue
-					;;
-				3)  continue
-					;;
-			esac
-		}
-	}
+                    # 2-6.Add users account
+                        echo
+                        read -p ":: Add your user account : " username
+                        echo $username >> username.tmp
+                        useradd -m $username &&
+                        passwd $username &&
+                        sed -i "/root/a $username ALL=(ALL) ALL" /etc/sudoers &&
+                            echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-6.Add users account" | tee -a ./log ||
+                            echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-6.Add users account" | tee -a ./log
 
-# 5.Mount the file systems
-	function step5 {
-		echo
-		if ls /dev/nvme0n1p2 > /dev/null 2>&1; then
-			mount /dev/nvme0n1p2 /mnt &&
-			mkdir /mnt/boot &&
-			mount /dev/nvme0n1p1 /mnt/boot &&
-			echo "(O) 5.Mount the file systems" && step6 || { 
-			echo "(X) 5.Mount the file systems <<<<<<<<<<"; exit; }
-		else
-			mount /dev/sda2 /mnt &&
-			mkdir /mnt/boot &&
-			mount /dev/sda1 /mnt/boot &&
-			echo "(O) 5.Mount the file systems" && step6 || { 
-			echo "(X) 5.Mount the file systems <<<<<<<<<<"; exit; }
-		fi
-	}
+                    # 2-7.systemd-boot Configuration
+                        echo
+                        bootctl --path=/boot install &&
+                        if find /dev/nvme0n1 >> /dev/null 2>&1; then
+                            PARTUUID=$(blkid -o export /dev/nvme0n1p2 | grep PARTUUID)
+                        else
+                            PARTUUID=$(blkid -o export /dev/sda2 | grep PARTUUID)
+                        fi
+                        
+                        # Edit /boot/loader/entries/arch.conf
+                        rm /boot/loader/entries/arch.conf
+                        echo "title   Arch Linux"                 >> /boot/loader/entries/arch.conf &&
+                        echo "linux   /vmlinuz-linux"             >> /boot/loader/entries/arch.conf &&
+                        if grep -q "AMD" "/proc/cpuinfo"; then
+                            echo "initrd  /amd-ucode.img"         >> /boot/loader/entries/arch.conf
+                        else
+                            echo "initrd  /intel-ucode.img"       >> /boot/loader/entries/arch.conf
+                        fi
+                        echo "initrd  /initramfs-linux.img"       >> /boot/loader/entries/arch.conf &&
+                        echo "options root=$PARTUUID rw" >> /boot/loader/entries/arch.conf &&
+                        
+                        # Edit /boot/loader/loader.conf
+                        sed -i '/default/d' /boot/loader/loader.conf &&
+                        echo "default arch" >> /boot/loader/loader.conf &&
+                        echo "timeout 4"    >> /boot/loader/loader.conf &&
+                        echo "editor no"    >> /boot/loader/loader.conf &&
+                        
+                        # Edit /etc/pacman.d/hooks/100-systemd-boot.hook
+                        echo "[Trigger]"                           >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                        echo "Type = Package"                      >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                        echo "Operation = Upgrade"                 >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                        echo "Target = systemd"                    >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                        echo ""                                    >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                        echo "[Action]"                            >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                        echo "Description = Updating systemd-boot" >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                        echo "When = PostTransaction"              >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                        echo "Exec = /usr/bin/bootctl update"      >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
 
-# 6.Select the mirrors
-	function step6 {
-		echo
-		sed -i '7i## Taiwan' /etc/pacman.d/mirrorlist &&
-		sed -i '8iServer = http://ftp.tku.edu.tw/Linux/ArchLinux/$repo/os/$arch' /etc/pacman.d/mirrorlist &&
-		echo "(O) 6.Select the mirrors" && step7 || { 
-		echo "(X) 6.Select the mirrors <<<<<<<<<<"; exit; }
-	}
+                        bootctl --path=/boot update &&
+                            echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-7.systemd-boot configuration" | tee -a ./log ||
+                            echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-7.systemd-boot configuration" | tee -a ./log
 
-# 7.Install linux kernel & base packages
-	function step7 {
-		echo
-		pacstrap /mnt base linux linux-firmware &&
-		echo "(O) 7.Install linux kernel & base packages" && step8 || { 
-		echo "(X) 7.Install linux kernel & base packages <<<<<<<<<<"; exit; }
-	}
+                    # 2-8.systemd-networkd Configuration
+                        echo
+                        mkdir /etc/systemd/network
+                        while [[ ! "$ACTION" =~ ^[eEwW]$ ]]; do
+                            read -n1 -p ":: Which is your connection, Ethernet or WiFi ? [E/W]: " ACTION
+                            echo ; done
+                                case $ACTION in
+                                [eE]) echo "[Match]"     >> /etc/systemd/network/20-dhcp.network &&
+                                    echo "Name=enp*" >> /etc/systemd/network/20-dhcp.network &&
+                                    echo ""            >> /etc/systemd/network/20-dhcp.network &&
+                                    echo "[Network]"   >> /etc/systemd/network/20-dhcp.network &&
+                                    echo "DHCP=ipv4"   >> /etc/systemd/network/20-dhcp.network &&
+                                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-8.systemd-networkd Configuration" | tee -a ./log ||
+                                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-8.systemd-networkd Configuration" | tee -a ./log
+                                    ;;
+                                [wW]) echo "[Match]"     >> /etc/systemd/network/20-dhcp.network &&
+                                    echo "Name=enp*" >> /etc/systemd/network/20-dhcp.network &&
+                                    echo ""            >> /etc/systemd/network/20-dhcp.network &&
+                                    echo "[Network]"   >> /etc/systemd/network/20-dhcp.network &&
+                                    echo "DHCP=ipv4"   >> /etc/systemd/network/20-dhcp.network &&
+                                    echo "[Match]"     >> /etc/systemd/network/25-wireless.network &&
+                                    echo "Name=wlp*" >> /etc/systemd/network/25-wireless.network &&
+                                    echo ""            >> /etc/systemd/network/25-wireless.network &&
+                                    echo "[Network]"   >> /etc/systemd/network/25-wireless.network &&
+                                    echo "DHCP=ipv4"   >> /etc/systemd/network/25-wireless.network &&
+                                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-8.systemd-networkd Configuration" | tee -a ./log ||
+                                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-8.systemd-networkd Configuration" | tee -a ./log
+                                    ;;
+                                esac
 
-# 8.Generate fstab
-	function step8 {
-		echo
-		genfstab -U /mnt >> /mnt/etc/fstab &&
-		cat /mnt/etc/fstab &&
-		echo "(O) 8.Generate fstab" && step9 || { 
-		echo "(X) 8.Generate fstab <<<<<<<<<<"; exit; }
-	}
+                    # 2-9.iwd Configuration
+                        echo
+                        if [ "$ACTION" = w ] || [ "$ACTION" = W ]; then
+                            mkdir /etc/iwd
+                            echo "[General]"                       >> /etc/iwd/main.conf &&
+                            echo "EnableNetworkConfiguration=true" >> /etc/iwd/main.conf &&
+                            echo ""                                >> /etc/iwd/main.conf &&
+                            echo "[Network]"                       >> /etc/iwd/main.conf &&
+                            echo "NameResolvingService=systemd"    >> /etc/iwd/main.conf &&
+                                echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-9.Wireless network configuration" | tee -a ./log ||
+                                echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-9.Wireless network configuration" | tee -a ./log
+                        else
+                                echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-9.Wireless network configuration (ignored)" | tee -a ./log ||
+                        fi
 
-# 9.Change root into the new system
-	function step9 {
-		echo
-		while [[ ! "$ACTION" =~ ^[yYnN]$ ]]; do
-			read -n1 -p "Do you want to change root into the new system? [Y/N]: " ACTION
-			echo ""; done
-			case $ACTION in
-			[yY]) cp /root/linux-master/archlinux/*.sh /mnt/opt
-				rm /root/script.zip
-				rm -r /root/linux-master
-				arch-chroot /mnt /opt/2-configure.sh
-				echo "(O) 9.Change root into the new system"
-				step10
-				;;
-			[nN]) echo "(X) 9.Change root into the new system"
-				exit
-				;;
-			*) echo "(X) 9.Change root into the new system"
-				continue
-				;;
-			esac
-	}
+                    exit
+EOF
+                  arch-chroot /mnt /bin/bash installation-step2.sh
+                  ;;
+            [nN]) echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-9.Change root into the new system" | tee -a ./log
+                  exit
+                  ;;
+            *)    echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-9.Change root into the new system" | tee -a ./log
+                  exit
+                  ;;
+            esac
 
-# Reboot
-	function step10 {
-		echo
-		read -n1 -p "Install sucessed, do you want to reboot ? [Y/N]: " ACTION
-		case $ACTION in
-			[yY]) umount -R /mnt
-				reboot
-				;;
-			[nN]) exit
-				;;
-		esac
+# 2-10.Check installation status
+    echo "
+
+
+             $(tput setaf 6)INSTALLATION FINISHED$(tput setaf 242)
+
+
+" 
+    cat /mnt/log >> ./log
+    rm -f /mnt/log
+    rm -f /mnt/installation-step2.sh
+    cat ./log
+    
+    configuration() {
+    
+#######################################################################################################################
+############################################# STEP3 Configure the applications ########################################
+#######################################################################################################################
+
+        # 3-1.Enable network service
+        sudo systemctl start systemd-networkd
+        sudo systemctl enable systemd-networkd
+        sudo systemctl start systemd-resolved
+        sudo systemctl enable systemd-resolved
+        ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+        sudo mkdir /etc/systemd/resolved.conf.d
+        echo "[Resolve]" >> /etc/systemd/resolved.conf.d/dnssec.conf
+        echo "DNSSEC=false" >> /etc/systemd/resolved.conf.d/dnssec.conf
+
+        if pacman -Qs iwd ; then
+            sudo systemctl start iwd
+            sudo systemctl enable iwd
+            sudo iwctl wlan0 scan
+            sudo iwctl wlan0 connect CHT_2.4G
+        fi
+        
+        ping -c 3 www.google.com > /dev/null &&
+        echo "( $(tput setaf 2)O$(tput sgr 0) ) 3-1.Enable network service" | tee -a ./log ||
+        echo "( $(tput setaf 1)X$(tput sgr 0) ) 3-1.Enable network service" | tee -a ./log 
+
+        # 3-2.Enable SSD Trim
+        sudo systemctl enable fstrim.timer &&
+        echo "( $(tput setaf 2)O$(tput sgr 0) ) 3-2.Enable SSD Trim" | tee -a ./log ||
+        echo "( $(tput setaf 1)X$(tput sgr 0) ) 3-2.Enable SSD Trim" | tee -a ./log 
+
+        # 3-3.Automount disk partitions ('ls -lh /dev/disk/by-uuid' or 'lsblk -f' to find UUID) ---------------------------------------------------------
+        #    # /dev/nvme0n1p1
+        #    UUID={UUID} /boot/efi vfat rw,noatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 2
+        #    # /dev/nvme0n1p2
+        #    UUID={UUID} / ext4 defaults,noatime 0 1
+        #    # /dev/sdb1
+        #    UUID={UUID} /home/zelko/Downloads ext4 defaults,noatime 0 2
+        #    # /dev/sda1
+        #    UUID={UUID} /home/zelko/Purple ext4 defaults,noatime 0 2
+        echo "( $(tput setaf 2)!$(tput sgr 0) ) 3-3.Automount disk partitions" | tee -a ./log ||
+        echo "( $(tput setaf 1)X$(tput sgr 0) ) 3-3.Automount disk partitions" | tee -a ./log 
+        
+        # 3-4.Add archlinuxcn repo
+        sudo sh -c "echo '' >> /etc/pacman.conf"
+        sudo sh -c "echo '[archlinuxcn]' >> /etc/pacman.conf"
+        sudo sh -c "echo 'Server = https://repo.archlinuxcn.org/\$arch' >> /etc/pacman.conf"
+        sudo pacman -Syyu
+        sudo pacman -S --noconfirm archlinuxcn-keyring &&
+        echo "( $(tput setaf 2)O$(tput sgr 0) ) 21.Add archlinuxcn repo" | tee -a ./log ||
+        echo "( $(tput setaf 1)X$(tput sgr 0) ) 21.Add archlinuxcn repo" | tee -a ./log 
+
+        printf "\nContinue to install applications? [Y/N] "
+        read -n1 action
+        echo
+            case $action in
+                [Nn]) exit ;;
+                [Yy]) break ;;
+                *) exit ;;
+            esac
+
+        # 3-5.Install GPU driver, font and plasma desktop
+        sudo pacman -S --noconfirm noto-fonts
+        sudo pacman -S --noconfirm xorg-server
+        sudo pacman -S --noconfirm nvidia
+        sudo pacman -S --noconfirm breeze
+        sudo pacman -S --noconfirm breeze-gtk
+        sudo pacman -S --noconfirm drkonqi
+        sudo pacman -S --noconfirm kde-cli-tools
+        sudo pacman -S --noconfirm kde-gtk-config
+        sudo pacman -S --noconfirm kdeplasma-addons
+        sudo pacman -S --noconfirm khotkeys
+        sudo pacman -S --noconfirm kinfocenter
+        sudo pacman -S --noconfirm kscreen
+        sudo pacman -S --noconfirm ksysguard
+        sudo pacman -S --noconfirm kwrited
+        sudo pacman -S --noconfirm plasma-browser-integration
+        sudo pacman -S --noconfirm plasma-desktop
+        sudo pacman -S --noconfirm plasma-integration
+        sudo pacman -S --noconfirm plasma-pa
+        sudo pacman -S --noconfirm plasma-workspace
+        sudo pacman -S --noconfirm sddm-kcm
+        sudo pacman -S --noconfirm user-manager
+
+        # 3-6.Install applications from official repo
+        sudo pacman -S --noconfirm ark
+        sudo pacman -S --noconfirm baidupcs-go
+        sudo pacman -S --noconfirm binutils
+        sudo pacman -S --noconfirm bleachbit
+        sudo pacman -S --noconfirm clipgrab
+        sudo pacman -S --noconfirm code
+        sudo pacman -S --noconfirm cronie
+        sudo pacman -S --noconfirm dolphin
+        sudo pacman -S --noconfirm dolphin-plugins
+        sudo pacman -S --noconfirm fakeroot
+        sudo pacman -S --noconfirm ffmpegthumbs
+        sudo pacman -S --noconfirm gimp
+        sudo pacman -S --noconfirm ibus
+        sudo pacman -S --noconfirm kate
+        sudo pacman -S --noconfirm kcalc
+        sudo pacman -S --noconfirm kdegraphics-thumbnailers
+        sudo pacman -S --noconfirm kdenetwork-filesharing
+        sudo pacman -S --noconfirm kdenlive
+        sudo pacman -S --noconfirm kdialog
+        sudo pacman -S --noconfirm keepassxc
+        sudo pacman -S --noconfirm kfind
+        sudo pacman -S --noconfirm kget
+        sudo pacman -S --noconfirm kolourpaint
+        sudo pacman -S --noconfirm kompare
+        sudo pacman -S --noconfirm konsole
+        sudo pacman -S --noconfirm krename
+        sudo pacman -S --noconfirm ksystemlog
+        sudo pacman -S --noconfirm ktimer
+        sudo pacman -S --noconfirm libreoffice-still
+        sudo pacman -S --noconfirm libreoffice-still-zh-tw
+        sudo pacman -S --noconfirm mpv
+        sudo pacman -S --noconfirm noto-fonts-cjk
+        sudo pacman -S --noconfirm okular
+        sudo pacman -S --noconfirm opera
+        sudo pacman -S --noconfirm opera-ffmpeg-codecs
+        sudo pacman -S --noconfirm p7zip
+        sudo pacman -S --noconfirm partitionmanager
+        sudo pacman -S --noconfirm pcsclite
+        sudo pacman -S --noconfirm profile-sync-daemon
+        sudo pacman -S --noconfirm qmmp
+        sudo pacman -S --noconfirm qt5-imageformats
+        sudo pacman -S --noconfirm rclone
+        sudo pacman -S --noconfirm rsync
+        sudo pacman -S --noconfirm skanlite
+        sudo pacman -S --noconfirm spectacle
+        sudo pacman -S --noconfirm unrar
+        sudo pacman -S --noconfirm xdg-user-dirs
+        sudo pacman -S --noconfirm yakuake
+        sudo pacman -S --noconfirm youtube-dl
+
+        # 3-7.Install applications from archlinuxcn repo
+        sudo pacman -S --noconfirm megatools
+        sudo pacman -S --noconfirm ibus-libzhuyin
+        sudo pacman -S --noconfirm perl-rename
+        sudo pacman -S --noconfirm qbittorrent-enhanced-git
+        sudo pacman -S --noconfirm qview
+        sudo pacman -S --noconfirm rclone-browser
+        sudo pacman -S --noconfirm safeeyes-git
+        sudo pacman -S --noconfirm unzip-iconv
+        sudo pacman -S --noconfirm wine-x64
+        sudo pacman -S --noconfirm yay
+        sudo pacman -S --noconfirm ytop
+        sudo pacman -S virtualbox
+
+        # sudo pacman -S --noconfirm bluedevil
+        # sudo pacman -S --noconfirm caprine
+        # sudo pacman -S --noconfirm crow-translate
+        # sudo pacman -S --noconfirm cups
+        # sudo pacman -S --noconfirm exfat-utils
+        # sudo pacman -S --noconfirm faad2 (qmmp)
+        # sudo pacman -S --noconfirm htop
+        # sudo pacman -S --noconfirm k3b
+        # sudo pacman -S --noconfirm kaccounts-providers
+        # sudo pacman -S --noconfirm kio-fuse
+        # sudo pacman -S --noconfirm kwayland-integration
+        # sudo pacman -S --noconfirm libmpcdec (qmmp)
+        # sudo pacman -S --noconfirm libva-vdpau-driver (vlc)
+        # sudo pacman -S --noconfirm man-db
+        # sudo pacman -S --noconfirm man-pages
+        # sudo pacman -S --noconfirm mpg123 (qmmp)
+        # sudo pacman -S --noconfirm mtpfs
+        # sudo pacman -S --noconfirm opusfile (qmmp)
+        # sudo pacman -S --noconfirm pulseaudio-alsa
+        # sudo pacman -S --noconfirm pulseaudio-bluetooth
+        # sudo pacman -S --noconfirm unzip-natspec
+        # sudo pacman -S --noconfirm wine
+        # sudo pacman -S --noconfirm xdg-desktop-portal-kde (flatpak)
+
+        # 3-8.Install applications from aur repo
+
+        # git clone https://aur.archlinux.org/trizen.git
+        # cd trizen
+        # makepkg -si
+
+        yay -S anydesk-bin
+        yay -S kde-servicemenus-rootactions
+
+        # yay -S ezusb
+        # yay -S isoimagewriter
+        # yay -S kmarkdownwebview
+        # yay -S ksnip
+        # yay -S megacmd-bin
+        # yay -S ms-office-online
+        # yay -S powerdevil-light
+        # yay -S stacer
+
+        # sudo sh ../../../Config/Sophos-Antivirus-free/install.sh
+        # sudo pacman -Rsn --noconfirm xdg-user-dirs
+
+        sudo systemctl enable sddm
     }
-
-# Run script
-    step1
+    
+    echo
+    read -n1 -p ":: Reboot now? " ACTION
+    case $ACTION in
+        [yY]) username=$(cat /mnt/username.tmp)
+              type configuration >> /mnt/home/$username/configuration.sh
+              rm /mnt/username.tmp
+              mv installation.sh /mnt/home/$username/
+              reboot ;;
+        [nN]) exit ;;
+    esac
