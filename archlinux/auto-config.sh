@@ -23,6 +23,11 @@ sudo systemctl enable fstrim.timer &&
 #    # /dev/sda1
 #    UUID={UUID} /home/zelko/Purple ext4 defaults,noatime 0 2
 
+# Add autostart programs
+cp ./config/autostart/* ~/.config/autostart/ &&
+    echo "OK, Autostart programs is configured." ||
+    echo "Error : Autostart programs configuration is wrong. <<<<<<<<<<<<<<<" ;
+
 # Auto update systemd-boot bootloader -------------------------------------------------------------
 
 sudo echo "[Trigger]
@@ -44,17 +49,16 @@ Exec = /usr/bin/bootctl update" >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
 #       echo "OK, Automount GSuite is configured." ||
 #       echo "Error : Automount GSuite configuration is wrong. <<<<<<<<<<<<<<<" ;
 
-# Turn on HiDPI & NumLock in SDDM -------------------------------------------------------------------------
+# Set DPI & NumLock in SDDM -------------------------------------------------------------------------
 
 sudo echo "[General]
 Numlock=on
 
 [X11]
-EnableHiDPI=true
 ServerArguments=-nolisten tcp -dpi 120" >> /etc/sddm.conf &&
     echo "OK, HiDPI & NumLock in SDDM is enabled." ||
     echo "Error : HiDPI & NumLock can't be turn on. <<<<<<<<<<<<<<<<<<" ;
- 
+
 # Set iBus input method ---------------------------------------------------------------------------
 
 echo "export XMODIFIERS=@im=ibus
@@ -93,7 +97,7 @@ cp ./config/kwallet/kwalletrc ~/.config/ &&
     echo "OK, Kwallet is disabled." ||
     echo "Error : Kwallet still enable. <<<<<<<<<<<<<<<<<<<<<<" ;
 
-# Set MPV Player ----------------------------------------------------------------------------------
+# Set mpv player ----------------------------------------------------------------------------------
 
 cp -r ./config/mpv/ ~/.config/ &&
     echo "OK, MPV is configured." ||
@@ -131,7 +135,7 @@ cp -r ./config/safeeyes/ ~/.config/ &&
     
 # Set WifiAudio -----------------------------------------------------------------------------------
 
-sudo cp -r ./config/WifiAudio/ /usr/share/ &&
+sudo cp -r ./config/wifi-audio/ /usr/share/ &&
     echo "OK, WifiAudio is configured." ||
     echo "Error : WifiAudio configuration is wrong. <<<<<<<<<<" ;
 
@@ -143,18 +147,19 @@ cp ./config/7-zip/* ~/.wine/drive_c/windows/ &&
     echo "Error : Wine configuration is wrong. <<<<<<<<<<<<<<<" ;
 
 # Add Custom Command ------------------------------------------------------------------------------
+echo "bindkey "^[[3~" delete-char" >> ~/.zshrc &&
 
-echo "alias script-list='cat ~/Documents/scripts/.list'" >> ~/.bashrc &&
-
-echo "alias count='sh ~/Documents/scripts/count.sh'
+echo "
+alias script-list='cat ~/Documents/scripts/.list'
+alias count='sh ~/Documents/scripts/count.sh'
 alias cc='sh ~/Documents/scripts/check.sh'
 alias dd='sh ~/Documents/scripts/download.sh'
 alias ee='sh ~/Documents/scripts/extract.sh'
 alias aa='sh ~/Documents/scripts/archive.sh'
-alias uu='sh ~/Documents/scripts/upload.sh'" >> ~/.bashrc &&
+alias uu='sh ~/Documents/scripts/upload.sh'" >> ~/.zshrc &&
 
 ## Show Nvidia GPU state
-echo "alias gpuinfo='watch -n 1 nvidia-smi'" >> ~/.bashrc &&
+echo "alias gpuinfo='watch -n 1 nvidia-smi'" >> ~/.zshrc &&
 
 ## Wait & Notify
 echo "
@@ -164,32 +169,31 @@ function notify {
     kdialog --passivepopup 'Time is up !';
     sleep 1s &&
     kdialog --passivepopup 'Something you must to do.';
-}" >> ~/.bashrc
+}" >> ~/.zshrc
 
 ## Play DVD format by mpv
 echo "
 function dvd {
     FILENAME=$1
     mpv dvdnav:// --dvd-device=${FILENAME}
-}" >> ~/.bashrc &&
+}
 
-echo "
 function blu {
     FILENAME=$1
     mpv bd:// --bd-device=${FILENAME}
-}" >> ~/.bashrc &&
+}" >> ~/.zshrc &&
 
 ## Extract ZIP format with custom encoding
-## echo "alias unzip-jp='python ~/Documents/scripts/unzip-jp.py'" >> ~/.bashrc &&
-## echo "alias unzip-sc='python ~/Documents/scripts/unzip-sc.py'" >> ~/.bashrc &&
+## echo "alias unzip-jp='python ~/Documents/scripts/unzip-jp.py'" >> ~/.zshrc &&
+## echo "alias unzip-sc='python ~/Documents/scripts/unzip-sc.py'" >> ~/.zshrc &&
 
 ## Cloud storage download scripts
-cat ./scripts/dl-gdrive.o >> ~/.bashrc &&
-cat ./scripts/dl-zippyshare.o >> ~/.bashrc &&
+cat ./scripts/dl-gdrive.o >> ~/.zshrc &&
+cat ./scripts/dl-zippyshare.o >> ~/.zshrc &&
 echo "
 alias baidu='baidupcs'
-alias baidu-login='baidupcs login -bduss=Z4d0NWbEFpYTZ-SUxwUDZUSEhNckd6RHJpRHVtbnZmWXVXRkpUdW1wY0R2NlplRUFBQUFBJCQAAAAAAAAAAAEAAAA6iYUJbWluYXMxNjE4MDMzAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMyf14DMn9eQX'" >> ~/.bashrc &&
-echo "alias mega='megadl'" >> ~/.bashrc &&
+alias baidu-login='baidupcs login -bduss=Z4d0NWbEFpYTZ-SUxwUDZUSEhNckd6RHJpRHVtbnZmWXVXRkpUdW1wY0R2NlplRUFBQUFBJCQAAAAAAAAAAAEAAAA6iYUJbWluYXMxNjE4MDMzAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMyf14DMn9eQX'" >> ~/.zshrc &&
+echo "alias mega='megadl'" >> ~/.zshrc &&
 
 ## Convert filename case
 echo "alias uppercase='
@@ -197,22 +201,23 @@ for file in * ; do
    basename=$(tr '[:lower:]' '[:upper:]' <<< "${file%.*}")
    newname="$basename.${file#*.}"
    mv "$file" "$newname"
-done'" >> ~/.bashrc &&
+done'" >> ~/.zshrc &&
 
 echo "alias lowercase='
 for file in * ; do
    basename=$(tr '[:upper:]' '[:lower:]' <<< "${file%.*}")
    newname="$basename.${file#*.}"
    mv "$file" "$newname"
-done'" >> ~/.bashrc &&
+done'" >> ~/.zshrc &&
 
-    echo "OK, Custom Command is added to bashrc." ||
+    echo "OK, Custom Command is added to zshrc." ||
     echo "Error : Custom Command configuration is wrong. <<<<<<<<<<" ;
 
 # Change LibreOffice splash -----------------------------------------------------------------------
 
 sudo cp ./config/libreoffice/intro.png /usr/lib/libreoffice/program &&
 sudo cp ./config/libreoffice/intro-highres.png /usr/lib/libreoffice/program &&
+sudo cp ./config/libreoffice/sofficerc /etc/libreoffice/ &&
     echo "OK, LibreOffice splash is changed." ||
     echo "Error : LibreOffice splash isn't changed. <<<<<<<<<<" ;
 
@@ -270,3 +275,5 @@ sudo pacman -Scc ; #清理整個軟體包快取
 echo "Unnecessary files is deleted." ;
 
 echo "Script is Finished !" ;
+
+echo 'source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme' >>! ~/.zshrc
