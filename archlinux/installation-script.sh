@@ -3,7 +3,7 @@
 ##                                              INSTALLATION ASSISTANT                                       v1.0.0  ##
 #######################################################################################################################
 #
-# This file is a script for installing Arch Linux using the live system booted from an official installation image on my PC & NB. 
+# This file is a script for installing Arch Linux using the live system booted from an official image on my PC & NB. 
 #
 #######################################################################################################################
 ###################################################   DIRECTORY   #####################################################
@@ -323,6 +323,7 @@ echo "
                         echo "editor no"    >> /boot/loader/loader.conf &&
                         
                         # Edit /etc/pacman.d/hooks/100-systemd-boot.hook
+                        mkdir /etc/pacman.d/hooks/
                         echo "[Trigger]"                           >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
                         echo "Type = Package"                      >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
                         echo "Operation = Upgrade"                 >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
@@ -418,10 +419,10 @@ EOF
         sudo systemctl enable systemd-networkd
         sudo systemctl start systemd-resolved
         sudo systemctl enable systemd-resolved
-        ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+        sudo ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
         sudo mkdir /etc/systemd/resolved.conf.d
-        echo "[Resolve]" >> /etc/systemd/resolved.conf.d/dnssec.conf
-        echo "DNSSEC=false" >> /etc/systemd/resolved.conf.d/dnssec.conf
+        sudo echo "[Resolve]" >> /etc/systemd/resolved.conf.d/dnssec.conf
+        sudo echo "DNSSEC=false" >> /etc/systemd/resolved.conf.d/dnssec.conf
 
         if pacman -Qs iwd ; then
             sudo systemctl start iwd
@@ -432,7 +433,7 @@ EOF
         
         ping -c 3 www.google.com > /dev/null &&
         echo "( $(tput setaf 2)O$(tput sgr 0) ) 3-1.Enable network service" | tee -a ./log ||
-        echo "( $(tput setaf 1)X$(tput sgr 0) ) 3-1.Enable network service" | tee -a ./log 
+        { echo "( $(tput setaf 1)X$(tput sgr 0) ) 3-1.Enable network service" | tee -a ./log; exit}
 
         # 3-2.Enable SSD Trim
         sudo systemctl enable fstrim.timer &&
@@ -531,6 +532,7 @@ EOF
         sudo pacman -S --noconfirm p7zip
         sudo pacman -S --noconfirm partitionmanager
         sudo pacman -S --noconfirm pcsclite
+        sudo pacman -S --noconfirm pulseaudio-alsa
         sudo pacman -S --noconfirm profile-sync-daemon
         sudo pacman -S --noconfirm qmmp
         sudo pacman -S --noconfirm qt5-imageformats
@@ -542,6 +544,7 @@ EOF
         sudo pacman -S --noconfirm xdg-user-dirs
         sudo pacman -S --noconfirm yakuake
         sudo pacman -S --noconfirm youtube-dl
+        sudo pacman -S --noconfirm zsh
 
         # 3-7.Install applications from archlinuxcn repo
         sudo pacman -S --noconfirm megatools
@@ -551,7 +554,6 @@ EOF
         sudo pacman -S --noconfirm qview
         sudo pacman -S --noconfirm rclone-browser
         sudo pacman -S --noconfirm safeeyes-git
-        sudo pacman -S --noconfirm unzip-iconv
         sudo pacman -S --noconfirm wine-x64
         sudo pacman -S --noconfirm yay
         sudo pacman -S --noconfirm ytop
@@ -575,7 +577,6 @@ EOF
         # sudo pacman -S --noconfirm mpg123 (qmmp)
         # sudo pacman -S --noconfirm mtpfs
         # sudo pacman -S --noconfirm opusfile (qmmp)
-        # sudo pacman -S --noconfirm pulseaudio-alsa
         # sudo pacman -S --noconfirm pulseaudio-bluetooth
         # sudo pacman -S --noconfirm unzip-natspec
         # sudo pacman -S --noconfirm wine
@@ -589,7 +590,8 @@ EOF
 
         yay -S anydesk-bin
         yay -S kde-servicemenus-rootactions
-
+        yay -S zsh-theme-powerlevel10k-git
+        
         # yay -S ezusb
         # yay -S isoimagewriter
         # yay -S kmarkdownwebview
