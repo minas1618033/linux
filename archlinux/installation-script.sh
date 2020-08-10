@@ -78,7 +78,7 @@
 #       # iwctl station wlan0 connect CHT_24.G
 #
 #   0-6.Download the installation script
-#       curl -o installation.sh https://raw.githubusercontent.com/minas1618033/linux/master/archlinux/installation.sh 
+#       curl -o installation.sh https://raw.githubusercontent.com/minas1618033/linux/master/archlinux/installation-script.sh 
 #
 #   0-7.Run the script
 #
@@ -408,7 +408,7 @@ EOF
     rm -f /mnt/installation-step2.sh
     cat ./log
     
-    configuration() {
+    function configuration() {
     
 #######################################################################################################################
 ############################################# STEP3 Configure the applications ########################################
@@ -421,8 +421,8 @@ EOF
         sudo systemctl enable systemd-resolved
         sudo ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
         sudo mkdir /etc/systemd/resolved.conf.d
-        sudo echo "[Resolve]" >> /etc/systemd/resolved.conf.d/dnssec.conf
-        sudo echo "DNSSEC=false" >> /etc/systemd/resolved.conf.d/dnssec.conf
+        sudo sh -c "echo '[Resolve]' >> /etc/systemd/resolved.conf.d/dnssec.conf"
+        sudo sh -c "echo 'DNSSEC=false' >> /etc/systemd/resolved.conf.d/dnssec.conf"
 
         if pacman -Qs iwd ; then
             sudo systemctl start iwd
@@ -433,7 +433,7 @@ EOF
         
         ping -c 3 www.google.com > /dev/null &&
         echo "( $(tput setaf 2)O$(tput sgr 0) ) 3-1.Enable network service" | tee -a ./log ||
-        { echo "( $(tput setaf 1)X$(tput sgr 0) ) 3-1.Enable network service" | tee -a ./log; exit}
+        echo "( $(tput setaf 1)X$(tput sgr 0) ) 3-1.Enable network service" | tee -a ./log
 
         # 3-2.Enable SSD Trim
         sudo systemctl enable fstrim.timer &&
@@ -524,6 +524,7 @@ EOF
         sudo pacman -S --noconfirm ktimer
         sudo pacman -S --noconfirm libreoffice-still
         sudo pacman -S --noconfirm libreoffice-still-zh-tw
+        sudo pacman -S --noconfirm mpg123
         sudo pacman -S --noconfirm mpv
         sudo pacman -S --noconfirm noto-fonts-cjk
         sudo pacman -S --noconfirm okular
@@ -540,6 +541,7 @@ EOF
         sudo pacman -S --noconfirm rsync
         sudo pacman -S --noconfirm skanlite
         sudo pacman -S --noconfirm spectacle
+        sudo pacman -S --noconfirm telegram-desktop
         sudo pacman -S --noconfirm unrar
         sudo pacman -S --noconfirm xdg-user-dirs
         sudo pacman -S --noconfirm yakuake
@@ -574,7 +576,6 @@ EOF
         # sudo pacman -S --noconfirm libva-vdpau-driver (vlc)
         # sudo pacman -S --noconfirm man-db
         # sudo pacman -S --noconfirm man-pages
-        # sudo pacman -S --noconfirm mpg123 (qmmp)
         # sudo pacman -S --noconfirm mtpfs
         # sudo pacman -S --noconfirm opusfile (qmmp)
         # sudo pacman -S --noconfirm pulseaudio-bluetooth
