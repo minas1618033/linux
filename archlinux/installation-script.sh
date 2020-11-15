@@ -453,22 +453,22 @@ EOF
         echo "( $(tput setaf 1)X$(tput sgr 0) ) 3-3.Automount disk partitions" | tee -a ./log 
         
         # 3-4.Add archlinuxcn repo
-        sudo sh -c "echo '' >> /etc/pacman.conf"
-        sudo sh -c "echo '[archlinuxcn]' >> /etc/pacman.conf"
-        sudo sh -c "echo 'Server = https://repo.archlinuxcn.org/\$arch' >> /etc/pacman.conf"
+        # sudo sh -c "echo '' >> /etc/pacman.conf"
+        # sudo sh -c "echo '[archlinuxcn]' >> /etc/pacman.conf"
+        # sudo sh -c "echo 'Server = https://repo.archlinuxcn.org/\$arch' >> /etc/pacman.conf"
         sudo pacman -Syyu
-        sudo pacman -S --noconfirm archlinuxcn-keyring &&
-        echo "( $(tput setaf 2)O$(tput sgr 0) ) 21.Add archlinuxcn repo" | tee -a ./log ||
-        echo "( $(tput setaf 1)X$(tput sgr 0) ) 21.Add archlinuxcn repo" | tee -a ./log 
+        # sudo pacman -S --noconfirm archlinuxcn-keyring &&
+        # echo "( $(tput setaf 2)O$(tput sgr 0) ) 21.Add archlinuxcn repo" | tee -a ./log ||
+        # echo "( $(tput setaf 1)X$(tput sgr 0) ) 21.Add archlinuxcn repo" | tee -a ./log 
 
-        printf "\nContinue to install applications? [Y/N] "
-        read -n1 action
-        echo
-            case $action in
-                [Nn]) exit ;;
-                [Yy]) break ;;
-                *) exit ;;
-            esac
+        # printf "\nContinue to install applications? [Y/N] "
+        # read -n1 action
+        # echo
+        #     case $action in
+        #         [Nn]) exit ;;
+        #         [Yy]) break ;;
+        #         *) exit ;;
+        #     esac
 
         # 3-5.Install GPU driver, font and plasma desktop
         sudo pacman -S --noconfirm noto-fonts
@@ -496,17 +496,17 @@ EOF
         # 3-6.Install applications from official repo
         sudo pacman -S --noconfirm ark
         sudo pacman -S --noconfirm baidupcs-go
-        sudo pacman -S --noconfirm binutils
+        # sudo pacman -S --noconfirm binutils
         sudo pacman -S --noconfirm bleachbit
-        sudo pacman -S --noconfirm clipgrab
         sudo pacman -S --noconfirm code
         sudo pacman -S --noconfirm cronie
         sudo pacman -S --noconfirm dolphin
         sudo pacman -S --noconfirm dolphin-plugins
-        sudo pacman -S --noconfirm fakeroot
+        # sudo pacman -S --noconfirm fakeroot
         sudo pacman -S --noconfirm ffmpegthumbs
         sudo pacman -S --noconfirm gimp
         sudo pacman -S --noconfirm ibus
+        sudo pacman -S --noconfirm jellyfin
         sudo pacman -S --noconfirm kate
         sudo pacman -S --noconfirm kcalc
         sudo pacman -S --noconfirm kdegraphics-thumbnailers
@@ -514,14 +514,11 @@ EOF
         sudo pacman -S --noconfirm kdenlive
         sudo pacman -S --noconfirm kdialog
         sudo pacman -S --noconfirm keepassxc
-        sudo pacman -S --noconfirm kfind
-        sudo pacman -S --noconfirm kget
         sudo pacman -S --noconfirm kolourpaint
         sudo pacman -S --noconfirm kompare
         sudo pacman -S --noconfirm konsole
         sudo pacman -S --noconfirm krename
         sudo pacman -S --noconfirm ksystemlog
-        sudo pacman -S --noconfirm ktimer
         sudo pacman -S --noconfirm libreoffice-still
         sudo pacman -S --noconfirm libreoffice-still-zh-tw
         sudo pacman -S --noconfirm mpg123
@@ -549,39 +546,43 @@ EOF
         sudo pacman -S --noconfirm zsh
 
         # 3-7.Install applications from archlinuxcn repo
-        sudo pacman -S --noconfirm megatools
-        sudo pacman -S --noconfirm ibus-libzhuyin
-        sudo pacman -S --noconfirm perl-rename
-        sudo pacman -S --noconfirm qbittorrent-enhanced-git
-        sudo pacman -S --noconfirm qview
-        sudo pacman -S --noconfirm rclone-browser
-        sudo pacman -S --noconfirm safeeyes-git
-        sudo pacman -S --noconfirm wine-x64
-        sudo pacman -S --noconfirm yay
-        sudo pacman -S --noconfirm ytop
-        sudo pacman -S virtualbox
+        # sudo pacman -S --noconfirm megatools
+        # sudo pacman -S --noconfirm ibus-libzhuyin
+        # sudo pacman -S --noconfirm perl-rename
+        # sudo pacman -S --noconfirm qbittorrent-enhanced-git
+        # sudo pacman -S --noconfirm qview
+        # sudo pacman -S --noconfirm rclone-browser
+        # sudo pacman -S --noconfirm safeeyes
+        # sudo pacman -S --noconfirm yay
+        # sudo pacman -S --noconfirm ytop
+        # sudo pacman -S virtualbox
 
-        # sudo pacman -S --noconfirm bluedevil
-        # sudo pacman -S --noconfirm caprine
-        # sudo pacman -S --noconfirm crow-translate
-        # sudo pacman -S --noconfirm cups
-        # sudo pacman -S --noconfirm exfat-utils
-        # sudo pacman -S --noconfirm faad2 (qmmp)
-        # sudo pacman -S --noconfirm htop
-        # sudo pacman -S --noconfirm k3b
-        # sudo pacman -S --noconfirm kaccounts-providers
-        # sudo pacman -S --noconfirm kio-fuse
-        # sudo pacman -S --noconfirm kwayland-integration
-        # sudo pacman -S --noconfirm libmpcdec (qmmp)
-        # sudo pacman -S --noconfirm libva-vdpau-driver (vlc)
-        # sudo pacman -S --noconfirm man-db
-        # sudo pacman -S --noconfirm man-pages
-        # sudo pacman -S --noconfirm mtpfs
-        # sudo pacman -S --noconfirm opusfile (qmmp)
-        # sudo pacman -S --noconfirm pulseaudio-bluetooth
-        # sudo pacman -S --noconfirm unzip-natspec
-        # sudo pacman -S --noconfirm wine
-        # sudo pacman -S --noconfirm xdg-desktop-portal-kde (flatpak)
+        ### sudo pacman -S --noconfirm bluedevil
+        ### sudo pacman -S --noconfirm caprine
+        ### sudo pacman -S --noconfirm clipgrab
+        ### sudo pacman -S --noconfirm crow-translate
+        ### sudo pacman -S --noconfirm cups
+        ### sudo pacman -S --noconfirm exfat-utils
+        ### sudo pacman -S --noconfirm faad2 (qmmp)
+        ### sudo pacman -S --noconfirm firewalld
+        ### sudo pacman -S --noconfirm htop
+        ### sudo pacman -S --noconfirm k3b
+        ### sudo pacman -S --noconfirm kaccounts-providers
+        ### sudo pacman -S --noconfirm kio-fuse
+        ### sudo pacman -S --noconfirm kfind
+        ### sudo pacman -S --noconfirm kget
+        ### sudo pacman -S --noconfirm ktimer
+        ### sudo pacman -S --noconfirm kwayland-integration
+        ### sudo pacman -S --noconfirm libmpcdec (qmmp)
+        ### sudo pacman -S --noconfirm libva-vdpau-driver (vlc)
+        ### sudo pacman -S --noconfirm man-db
+        ### sudo pacman -S --noconfirm man-pages
+        ### sudo pacman -S --noconfirm mtpfs
+        ### sudo pacman -S --noconfirm opusfile (qmmp)
+        ### sudo pacman -S --noconfirm pulseaudio-bluetooth
+        ### sudo pacman -S --noconfirm unzip-natspec
+        ### sudo pacman -S --noconfirm wine
+        ### sudo pacman -S --noconfirm xdg-desktop-portal-kde (flatpak)
 
         # 3-8.Install applications from aur repo
 
@@ -589,18 +590,23 @@ EOF
         # cd trizen
         # makepkg -si
 
-        yay -S anydesk-bin
-        yay -S kde-servicemenus-rootactions
-        yay -S zsh-theme-powerlevel10k-git
-        
-        # yay -S ezusb
-        # yay -S isoimagewriter
-        # yay -S kmarkdownwebview
-        # yay -S ksnip
-        # yay -S megacmd-bin
-        # yay -S ms-office-online
+        # yay -S anydesk-bin
+        # yay -S kde-servicemenus-rootactions
         # yay -S powerdevil-light
-        # yay -S stacer
+        # yay -S qt-avif-image-plugin-git (qview)
+        # yay -S qt5-heif-git (qview)
+        # yay -S ttf-meslo-nerd-font-powerlevel10k
+        # yay -S wine-x64
+        # yay -S zsh-theme-powerlevel10k-git
+        
+        ### yay -S ezusb
+        ### yay -S isoimagewriter
+        ### yay -S kmarkdownwebview
+        ### yay -S ksnip
+        ### yay -S megacmd-bin
+        ### yay -S ms-office-online
+        ### yay -S stacer
+        ### yay -S tiny-media-manager
 
         # sudo sh ../../../Config/Sophos-Antivirus-free/install.sh
         # sudo pacman -Rsn --noconfirm xdg-user-dirs
