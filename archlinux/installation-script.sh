@@ -422,7 +422,9 @@ EOF
         sudo ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
         sudo mkdir /etc/systemd/resolved.conf.d
         sudo sh -c "echo '[Resolve]' >> /etc/systemd/resolved.conf.d/dnssec.conf"
-        sudo sh -c "echo 'DNSSEC=false' >> /etc/systemd/resolved.conf.d/dnssec.conf"
+        sudo sh -c "echo 'DNSOverTLS = true' >> /etc/systemd/resolved.conf.d/dnssec.conf"
+        sudo sh -c "echo 'DNSSEC = false' >> /etc/systemd/resolved.conf.d/dnssec.conf"
+        sudo sh -c "echo 'Cache = yes' >> /etc/systemd/resolved.conf.d/dnssec.conf"
 
         if pacman -Qs iwd ; then
             sudo systemctl start iwd
@@ -471,73 +473,73 @@ EOF
         #     esac
 
         # 3-5.Install GPU driver, font and plasma desktop
-        sudo pacman -S --noconfirm noto-fonts
-        sudo pacman -S --noconfirm xorg-server
-        sudo pacman -S --noconfirm nvidia
-        sudo pacman -S --noconfirm breeze
-        sudo pacman -S --noconfirm breeze-gtk
-        sudo pacman -S --noconfirm drkonqi
-        sudo pacman -S --noconfirm kde-gtk-config
-        sudo pacman -S --noconfirm kdeplasma-addons
-        sudo pacman -S --noconfirm kinfocenter
-        sudo pacman -S --noconfirm ksysguard
-        sudo pacman -S --noconfirm plasma-desktop
-        sudo pacman -S --noconfirm plasma-integration
-        sudo pacman -S --noconfirm plasma-pa
-        sudo pacman -S --noconfirm plasma-workspace
-        sudo pacman -S --noconfirm sddm-kcm
-        sudo pacman -S --noconfirm user-manager
+        sudo pacman -S --noconfirm --needed noto-fonts
+        sudo pacman -S --noconfirm --needed xorg-server
+        sudo pacman -S --noconfirm --needed nvidia
+        sudo pacman -S --noconfirm --needed breeze
+        sudo pacman -S --noconfirm --needed breeze-gtk
+        sudo pacman -S --noconfirm --needed drkonqi
+        sudo pacman -S --noconfirm --needed kde-gtk-config
+        sudo pacman -S --noconfirm --needed kdeplasma-addons
+        sudo pacman -S --noconfirm --needed kinfocenter
+        sudo pacman -S --noconfirm --needed ksysguard
+        sudo pacman -S --noconfirm --needed plasma-desktop
+        sudo pacman -S --noconfirm --needed plasma-integration
+        sudo pacman -S --noconfirm --needed plasma-pa
+        sudo pacman -S --noconfirm --needed plasma-workspace
+        sudo pacman -S --noconfirm --needed sddm-kcm
+        sudo pacman -S --noconfirm --needed user-manager
 
         # 3-6.Install applications from official repo
-        sudo pacman -S --noconfirm ark
-        sudo pacman -S --noconfirm baidupcs-go
-        # sudo pacman -S --noconfirm binutils
-        sudo pacman -S --noconfirm bleachbit
-        sudo pacman -S --noconfirm code
-        sudo pacman -S --noconfirm cronie
-        sudo pacman -S --noconfirm dolphin
-        sudo pacman -S --noconfirm exfatprogs
-        # sudo pacman -S --noconfirm fakeroot
-        sudo pacman -S --noconfirm firefox
-        sudo pacman -S --noconfirm gimp
-        sudo pacman -S --noconfirm ibus
-        sudo pacman -S --noconfirm jellyfin
-        sudo pacman -S --noconfirm kate
-        sudo pacman -S --noconfirm kcalc
-        sudo pacman -S --noconfirm kdegraphics-thumbnailers
-        sudo pacman -S --noconfirm kdenlive
-        sudo pacman -S --noconfirm kdialog
-        sudo pacman -S --noconfirm keepassxc
-        sudo pacman -S --noconfirm kolourpaint
-        sudo pacman -S --noconfirm kompare
-        sudo pacman -S --noconfirm konsole
-        sudo pacman -S --noconfirm krename
-        sudo pacman -S --noconfirm ksystemlog
-        sudo pacman -S --noconfirm libreoffice-still
-        sudo pacman -S --noconfirm libreoffice-still-zh-tw
-        sudo pacman -S --noconfirm markdownpart
-        sudo pacman -S --noconfirm mpg123
-        sudo pacman -S --noconfirm mpv
-        sudo pacman -S --noconfirm noto-fonts-cjk
-        sudo pacman -S --noconfirm okular
-        sudo pacman -S --noconfirm p7zip
-        sudo pacman -S --noconfirm partitionmanager
-        sudo pacman -S --noconfirm pcsclite
-        sudo pacman -S --noconfirm perl-rename
-        sudo pacman -S --noconfirm pulseaudio-alsa
-        sudo pacman -S --noconfirm profile-sync-daemon
-        sudo pacman -S --noconfirm qmmp
-        sudo pacman -S --noconfirm rclone
-        sudo pacman -S --noconfirm rsync
-        sudo pacman -S --noconfirm skanlite
-        sudo pacman -S --noconfirm spectacle
-        sudo pacman -S --noconfirm telegram-desktop
-        sudo pacman -S --noconfirm unrar
-        sudo pacman -S --noconfirm xdg-user-dirs
-        sudo pacman -S --noconfirm yakuake
-        sudo pacman -S --noconfirm youtube-dl
-        sudo pacman -S --noconfirm zsh
-        sudo pacman -S --noconfirm zsh-theme-powerlevel10k
+        sudo pacman -S --noconfirm --needed ark
+        sudo pacman -S --noconfirm --needed baidupcs-go
+        # sudo pacman -S --noconfirm --needed binutils
+        sudo pacman -S --noconfirm --needed bleachbit
+        sudo pacman -S --noconfirm --needed code
+        sudo pacman -S --noconfirm --needed cronie
+        sudo pacman -S --noconfirm --needed dolphin
+        sudo pacman -S --noconfirm --needed exfatprogs
+        # sudo pacman -S --noconfirm --needed fakeroot
+        sudo pacman -S --noconfirm --needed firefox
+        sudo pacman -S --noconfirm --needed gimp
+        sudo pacman -S --noconfirm --needed gnome-boxes
+        sudo pacman -S --noconfirm --needed ibus
+        sudo pacman -S --noconfirm --needed kate
+        sudo pacman -S --noconfirm --needed kcalc
+        sudo pacman -S --noconfirm --needed kdegraphics-thumbnailers
+        sudo pacman -S --noconfirm --needed kdenlive
+        sudo pacman -S --noconfirm --needed kdialog
+        sudo pacman -S --noconfirm --needed keepassxc
+        sudo pacman -S --noconfirm --needed kolourpaint
+        sudo pacman -S --noconfirm --needed kompare
+        sudo pacman -S --noconfirm --needed konsole
+        sudo pacman -S --noconfirm --needed krename
+        sudo pacman -S --noconfirm --needed ksystemlog
+        sudo pacman -S --noconfirm --needed libreoffice-still
+        sudo pacman -S --noconfirm --needed libreoffice-still-zh-tw
+        sudo pacman -S --noconfirm --needed markdownpart
+        sudo pacman -S --noconfirm --needed mpg123
+        sudo pacman -S --noconfirm --needed mpv
+        sudo pacman -S --noconfirm --needed noto-fonts-cjk
+        sudo pacman -S --noconfirm --needed okular
+        sudo pacman -S --noconfirm --needed p7zip
+        sudo pacman -S --noconfirm --needed partitionmanager
+        sudo pacman -S --noconfirm --needed pcsclite
+        sudo pacman -S --noconfirm --needed perl-rename
+        sudo pacman -S --noconfirm --needed pulseaudio-alsa
+        sudo pacman -S --noconfirm --needed profile-sync-daemon
+        sudo pacman -S --noconfirm --needed qmmp
+        sudo pacman -S --noconfirm --needed rclone
+        sudo pacman -S --noconfirm --needed rsync
+        sudo pacman -S --noconfirm --needed skanlite
+        sudo pacman -S --noconfirm --needed spectacle
+        sudo pacman -S --noconfirm --needed telegram-desktop
+        sudo pacman -S --noconfirm --needed unrar
+        sudo pacman -S --noconfirm --needed xdg-user-dirs
+        sudo pacman -S --noconfirm --needed yakuake
+        sudo pacman -S --noconfirm --needed youtube-dl
+        sudo pacman -S --noconfirm --needed zsh
+        sudo pacman -S --noconfirm --needed zsh-theme-powerlevel10k
 
         # 3-7.Install applications from archlinuxcn repo
         # sudo pacman -S --noconfirm megatools
@@ -548,42 +550,42 @@ EOF
         # sudo pacman -S --noconfirm safeeyes
         # sudo pacman -S --noconfirm yay
         # sudo pacman -S --noconfirm ytop
-        # sudo pacman -S virtualbox
 
-        ### sudo pacman -S --noconfirm bluedevil
-        ### sudo pacman -S --noconfirm caprine
-        ### sudo pacman -S --noconfirm clipgrab
-        ### sudo pacman -S --noconfirm crow-translate
-        ### sudo pacman -S --noconfirm cups
-        ### sudo pacman -S --noconfirm dolphin-plugins
-        ### sudo pacman -S --noconfirm faad2 (qmmp)
-        ### sudo pacman -S --noconfirm ffmpegthumbs
-        ### sudo pacman -S --noconfirm firewalld
-        ### sudo pacman -S --noconfirm k3b
-        ### sudo pacman -S --noconfirm kaccounts-providers
-        ### sudo pacman -S --noconfirm kde-cli-tools
-        ### sudo pacman -S --noconfirm kdenetwork-filesharing
-        ### sudo pacman -S --noconfirm khotkeys
-        ### sudo pacman -S --noconfirm kio-fuse
-        ### sudo pacman -S --noconfirm kfind
-        ### sudo pacman -S --noconfirm kscreen
-        ### sudo pacman -S --noconfirm ktimer
-        ### sudo pacman -S --noconfirm kwayland-integration
-        ### sudo pacman -S --noconfirm kwrited
-        ### sudo pacman -S --noconfirm libmpcdec (qmmp)
-        ### sudo pacman -S --noconfirm libva-vdpau-driver (vlc)
-        ### sudo pacman -S --noconfirm man-db
-        ### sudo pacman -S --noconfirm man-pages
-        ### sudo pacman -S --noconfirm mtpfs
-        ### sudo pacman -S --noconfirm opera
-        ### sudo pacman -S --noconfirm opera-ffmpeg-codecs
-        ### sudo pacman -S --noconfirm opusfile (qmmp)
-        ### sudo pacman -S --noconfirm plasma-browser-integration
-        ### sudo pacman -S --noconfirm pulseaudio-bluetooth
-        ### sudo pacman -S --noconfirm qt5-imageformats
-        ### sudo pacman -S --noconfirm unzip-natspec
-        ### sudo pacman -S --noconfirm wine
-        ### sudo pacman -S --noconfirm xdg-desktop-portal-kde (flatpak)
+        ### sudo pacman -S --noconfirm --needed bluedevil
+        ### sudo pacman -S --noconfirm --needed caprine
+        ### sudo pacman -S --noconfirm --needed clipgrab
+        ### sudo pacman -S --noconfirm --needed crow-translate
+        ### sudo pacman -S --noconfirm --needed cups
+        ### sudo pacman -S --noconfirm --needed dolphin-plugins
+        ### sudo pacman -S --noconfirm --needed faad2 (qmmp)
+        ### sudo pacman -S --noconfirm --needed ffmpegthumbs
+        ### sudo pacman -S --noconfirm --needed firewalld
+        ### sudo pacman -S --noconfirm --needed k3b
+        ### sudo pacman -S --noconfirm --needed kaccounts-providers
+        ### sudo pacman -S --noconfirm --needed kde-cli-tools
+        ### sudo pacman -S --noconfirm --needed kdenetwork-filesharing
+        ### sudo pacman -S --noconfirm --needed khotkeys
+        ### sudo pacman -S --noconfirm --needed kio-fuse
+        ### sudo pacman -S --noconfirm --needed kfind
+        ### sudo pacman -S --noconfirm --needed kscreen
+        ### sudo pacman -S --noconfirm --needed ktimer
+        ### sudo pacman -S --noconfirm --needed kwayland-integration
+        ### sudo pacman -S --noconfirm --needed kwrited
+        ### sudo pacman -S --noconfirm --needed libmpcdec (qmmp)
+        ### sudo pacman -S --noconfirm --needed libva-vdpau-driver (vlc)
+        ### sudo pacman -S --noconfirm --needed man-db
+        ### sudo pacman -S --noconfirm --needed man-pages
+        ### sudo pacman -S --noconfirm --needed mtpfs
+        ### sudo pacman -S --noconfirm --needed opera
+        ### sudo pacman -S --noconfirm --needed opera-ffmpeg-codecs
+        ### sudo pacman -S --noconfirm --needed opusfile (qmmp)
+        ### sudo pacman -S --noconfirm --needed plasma-browser-integration
+        ### sudo pacman -S --noconfirm --needed pulseaudio-bluetooth
+        ### sudo pacman -S --noconfirm --needed qt5-imageformats
+        ### sudo pacman -S --noconfirm --needed unzip-natspec
+        ### sudo pacman -S --noconfirm --needed wine
+        ### sudo pacman -S --noconfirm --needed xdg-desktop-portal-kde (flatpak)
+        ### sudo pacman -S virtualbox
 
         # 3-8.Install applications from aur repo
 
@@ -593,6 +595,7 @@ EOF
 
         # yay -S anydesk-bin
         # yay -S kde-servicemenus-rootactions
+        # yay -S jellyfin
         # yay -S powerdevil-light
         # yay -S qt-avif-image-plugin-git (qview)
         # yay -S qt5-heif-git (qview)
