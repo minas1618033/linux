@@ -220,13 +220,13 @@ echo "
             echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log ||
             echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log
         ;;
-    2)  mount /dev/vda2 /mnt &&
+    4)  mount /dev/vda2 /mnt &&
         mkdir /mnt/boot &&
         mount /dev/vda1 /mnt/boot &&
             echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log ||
             echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log
         ;;
-    2)  mount /dev/vda2 /mnt &&
+    5)  mount /dev/vda2 /mnt &&
         mkdir /mnt/boot &&
         mount /dev/vda1 /mnt/boot &&
             echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log ||
@@ -328,48 +328,57 @@ echo "
 
                     # 2-7.systemd-boot Configuration
                         echo
-                        bootctl --path=/boot install &&
-                        if find /dev/nvme0n1 >> /dev/null 2>&1; then
-                            PARTUUID=$(blkid -o export /dev/nvme0n1p2 | grep PARTUUID)
-                        if find /dev/sda1 >> /dev/null 2>&1; then
-                            PARTUUID=$(blkid -o export /dev/sda2 | grep PARTUUID)
-                        if find /dev/vda1 >> /dev/null 2>&1; then
-                            PARTUUID=$(blkid -o export /dev/vda2 | grep PARTUUID)
-                        fi
-                        
-                        # Edit /boot/loader/entries/arch.conf
-                        rm /boot/loader/entries/arch.conf
-                        echo "title   Arch Linux"                 >> /boot/loader/entries/arch.conf &&
-                        echo "linux   /vmlinuz-linux"             >> /boot/loader/entries/arch.conf &&
-                        if grep -q "AMD" "/proc/cpuinfo"; then
-                            echo "initrd  /amd-ucode.img"         >> /boot/loader/entries/arch.conf
-                        else
-                            echo "initrd  /intel-ucode.img"       >> /boot/loader/entries/arch.conf
-                        fi
-                        echo "initrd  /initramfs-linux.img"       >> /boot/loader/entries/arch.conf &&
-                        echo "options root=$PARTUUID rw" >> /boot/loader/entries/arch.conf &&
-                        
-                        # Edit /boot/loader/loader.conf
-                        sed -i '/default/d' /boot/loader/loader.conf &&
-                        echo "default arch" >> /boot/loader/loader.conf &&
-                        echo "timeout 4"    >> /boot/loader/loader.conf &&
-                        echo "editor no"    >> /boot/loader/loader.conf &&
-                        
-                        # Edit /etc/pacman.d/hooks/100-systemd-boot.hook
-                        mkdir /etc/pacman.d/hooks/
-                        echo "[Trigger]"                           >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
-                        echo "Type = Package"                      >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
-                        echo "Operation = Upgrade"                 >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
-                        echo "Target = systemd"                    >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
-                        echo ""                                    >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
-                        echo "[Action]"                            >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
-                        echo "Description = Updating systemd-boot" >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
-                        echo "When = PostTransaction"              >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
-                        echo "Exec = /usr/bin/bootctl update"      >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                        if [ -d "/boot/efi" ] ; then
+                            bootctl --path=/boot install &&
+                            if find /dev/nvme0n1 >> /dev/null 2>&1; then
+                                PARTUUID=$(blkid -o export /dev/nvme0n1p2 | grep PARTUUID)
+                            if find /dev/sda1 >> /dev/null 2>&1; then
+                                PARTUUID=$(blkid -o export /dev/sda2 | grep PARTUUID)
+                            if find /dev/vda1 >> /dev/null 2>&1; then
+                                PARTUUID=$(blkid -o export /dev/vda2 | grep PARTUUID)
+                            fi
+                            
+                            # Edit /boot/loader/entries/arch.conf
+                            rm /boot/loader/entries/arch.conf
+                            echo "title   Arch Linux"                 >> /boot/loader/entries/arch.conf &&
+                            echo "linux   /vmlinuz-linux"             >> /boot/loader/entries/arch.conf &&
+                            if grep -q "AMD" "/proc/cpuinfo"; then
+                                echo "initrd  /amd-ucode.img"         >> /boot/loader/entries/arch.conf
+                            else
+                                echo "initrd  /intel-ucode.img"       >> /boot/loader/entries/arch.conf
+                            fi
+                            echo "initrd  /initramfs-linux.img"       >> /boot/loader/entries/arch.conf &&
+                            echo "options root=$PARTUUID rw" >> /boot/loader/entries/arch.conf &&
+                            
+                            # Edit /boot/loader/loader.conf
+                            sed -i '/default/d' /boot/loader/loader.conf &&
+                            echo "default arch" >> /boot/loader/loader.conf &&
+                            echo "timeout 4"    >> /boot/loader/loader.conf &&
+                            echo "editor no"    >> /boot/loader/loader.conf &&
+                            
+                            # Edit /etc/pacman.d/hooks/100-systemd-boot.hook
+                            mkdir /etc/pacman.d/hooks/
+                            echo "[Trigger]"                           >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                            echo "Type = Package"                      >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                            echo "Operation = Upgrade"                 >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                            echo "Target = systemd"                    >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                            echo ""                                    >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                            echo "[Action]"                            >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                            echo "Description = Updating systemd-boot" >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                            echo "When = PostTransaction"              >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                            echo "Exec = /usr/bin/bootctl update"      >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
 
-                        bootctl --path=/boot update &&
-                            echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-7.systemd-boot configuration" | tee -a ./log ||
-                            echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-7.systemd-boot configuration" | tee -a ./log
+                            bootctl --path=/boot update &&
+                                echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-7.systemd-boot configuration" | tee -a ./log ||
+                                echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-7.systemd-boot configuration" | tee -a ./log
+                        else
+                            mkinitcpio -p linux &&
+                            pacman -S grub &&
+                            grub-install --target=i386-pc --recheck /dev/vda &&
+                            grub-mkconfig -o /boot/grub/grub.cfg &&
+                                echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-7.systemd-boot configuration" | tee -a ./log ||
+                                echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-7.systemd-boot configuration" | tee -a ./log
+                        fi
 
                     # 2-8.systemd-networkd Configuration
                         echo
