@@ -115,9 +115,11 @@ echo "
     
 # 1-4.Partition the disks
     echo
-    echo "   1.Default A ( Desktop: 1*NVME + 2*HDD )"
-    echo "   2.Default B ( Laptop: 1*SSD)"
-    echo "   3.Manual partitioning"
+    echo "   1.Default A (AMD Desktop: 1*NVME + 2*HDD)"
+    echo "   2.Default B (Intel Laptop: 1*SSD)"
+    echo "   3.Virtual Machine (UEFI: 1*SSD)"
+    echo "   4.Virtual Machine (BIOS: 1*SSD)"
+    echo "   5.Manual partitioning"
     echo
     read -p ":: Select disks PARTITIONING configuration : " PARTITION
     case $PARTITION in
@@ -181,7 +183,24 @@ echo "
                     ;;
             esac
             ;;
-        3)  parted
+        3)  parted -s /dev/vda mklabel gpt &&
+            parted -s /dev/vda mkpart "esp" fat32 '0%' 200MB &&
+            parted -s /dev/vda set 1 esp on &&
+            parted -s /dev/vda mkpart "root" ext4 200MiB '100%' &&
+            mkfs.vfat /dev/sda1 &&
+            mkfs.ext4 /dev/sda2
+                echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
+                echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log
+            ;;
+        4)  parted -s /dev/vda mkpart primary fat32 '0%' 200MB &&
+            parted -s /dev/vda set 1 boot on &&
+            parted -s /dev/vda mkpart primary ext4 200MiB '100%' &&
+            mkfs.vfat /dev/vda1 &&
+            mkfs.ext4 /dev/vda2
+                echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
+                echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log
+            ;;
+        5)  parted
             exit
             ;;
     esac
@@ -201,11 +220,23 @@ echo "
             echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log ||
             echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log
         ;;
+    2)  mount /dev/vda2 /mnt &&
+        mkdir /mnt/boot &&
+        mount /dev/vda1 /mnt/boot &&
+            echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log ||
+            echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log
+        ;;
+    2)  mount /dev/vda2 /mnt &&
+        mkdir /mnt/boot &&
+        mount /dev/vda1 /mnt/boot &&
+            echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log ||
+            echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log
+        ;;
     esac
 
 # 1-6.Select the mirrors
     echo
-###    sed -i '11iServer = http://archlinux.ccns.ncku.edu.tw/archlinux/$repo/os/$arch' /etc/pacman.d/mirrorlist &&
+    sed -i '11iServer = https://archlinux.ccns.ncku.edu.tw/archlinux/$repo/os/$arch' /etc/pacman.d/mirrorlist &&
     sed -i '12iServer = http://archlinux.cs.nctu.edu.tw/$repo/os/$arch' /etc/pacman.d/mirrorlist &&
         echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-6.Select the mirrors" | tee -a ./log ||
         echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-6.Select the mirrors" | tee -a ./log
@@ -300,8 +331,10 @@ echo "
                         bootctl --path=/boot install &&
                         if find /dev/nvme0n1 >> /dev/null 2>&1; then
                             PARTUUID=$(blkid -o export /dev/nvme0n1p2 | grep PARTUUID)
-                        else
+                        if find /dev/sda1 >> /dev/null 2>&1; then
                             PARTUUID=$(blkid -o export /dev/sda2 | grep PARTUUID)
+                        if find /dev/vda1 >> /dev/null 2>&1; then
+                            PARTUUID=$(blkid -o export /dev/vda2 | grep PARTUUID)
                         fi
                         
                         # Edit /boot/loader/entries/arch.conf
@@ -349,7 +382,7 @@ echo "
                                     echo "Name=enp*" >> /etc/systemd/network/20-dhcp.network &&
                                     echo ""            >> /etc/systemd/network/20-dhcp.network &&
                                     echo "[Network]"   >> /etc/systemd/network/20-dhcp.network &&
-                                    echo "DHCP=ipv4"   >> /etc/systemd/network/20-dhcp.network &&
+                                    echo "DHCP=true"   >> /etc/systemd/network/20-dhcp.network &&
                                         echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-8.systemd-networkd Configuration" | tee -a ./log ||
                                         echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-8.systemd-networkd Configuration" | tee -a ./log
                                     ;;
@@ -357,12 +390,12 @@ echo "
                                     echo "Name=enp*" >> /etc/systemd/network/20-dhcp.network &&
                                     echo ""            >> /etc/systemd/network/20-dhcp.network &&
                                     echo "[Network]"   >> /etc/systemd/network/20-dhcp.network &&
-                                    echo "DHCP=ipv4"   >> /etc/systemd/network/20-dhcp.network &&
+                                    echo "DHCP=true"   >> /etc/systemd/network/20-dhcp.network &&
                                     echo "[Match]"     >> /etc/systemd/network/25-wireless.network &&
                                     echo "Name=wlp*" >> /etc/systemd/network/25-wireless.network &&
                                     echo ""            >> /etc/systemd/network/25-wireless.network &&
                                     echo "[Network]"   >> /etc/systemd/network/25-wireless.network &&
-                                    echo "DHCP=ipv4"   >> /etc/systemd/network/25-wireless.network &&
+                                    echo "DHCP=true"   >> /etc/systemd/network/25-wireless.network &&
                                         echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-8.systemd-networkd Configuration" | tee -a ./log ||
                                         echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-8.systemd-networkd Configuration" | tee -a ./log
                                     ;;
@@ -424,7 +457,7 @@ EOF
         sudo sh -c "echo '[Resolve]' >> /etc/systemd/resolved.conf.d/dnssec.conf"
         sudo sh -c "echo 'DNSOverTLS = true' >> /etc/systemd/resolved.conf.d/dnssec.conf"
         sudo sh -c "echo 'DNSSEC = false' >> /etc/systemd/resolved.conf.d/dnssec.conf"
-        sudo sh -c "echo 'Cache = yes' >> /etc/systemd/resolved.conf.d/dnssec.conf"
+        sudo sh -c "echo 'Cache = true' >> /etc/systemd/resolved.conf.d/dnssec.conf"
 
         if pacman -Qs iwd ; then
             sudo systemctl start iwd
@@ -554,6 +587,7 @@ EOF
         ### sudo pacman -S --noconfirm --needed bluedevil
         ### sudo pacman -S --noconfirm --needed caprine
         ### sudo pacman -S --noconfirm --needed clipgrab
+        ### sudo pacman -S --noconfirm --needed converseen
         ### sudo pacman -S --noconfirm --needed crow-translate
         ### sudo pacman -S --noconfirm --needed cups
         ### sudo pacman -S --noconfirm --needed dolphin-plugins
@@ -599,6 +633,7 @@ EOF
         # yay -S powerdevil-light
         # yay -S qt-avif-image-plugin-git (qview)
         # yay -S qt5-heif-git (qview)
+        # yay -S taipei-sans-tc
         # yay -S ttf-meslo-nerd-font-powerlevel10k
         # yay -S wine-x64
         
