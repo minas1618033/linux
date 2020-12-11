@@ -331,12 +331,11 @@ echo "
                         if [ -d "/boot/efi" ] ; then
                             bootctl --path=/boot install &&
                             if find /dev/nvme0n1 >> /dev/null 2>&1; then
-                                PARTUUID=$(blkid -o export /dev/nvme0n1p2 | grep PARTUUID)
+                                PARTUUID=$(blkid -o export /dev/nvme0n1p2 | grep PARTUUID); fi
                             if find /dev/sda1 >> /dev/null 2>&1; then
-                                PARTUUID=$(blkid -o export /dev/sda2 | grep PARTUUID)
+                                PARTUUID=$(blkid -o export /dev/sda2 | grep PARTUUID); fi
                             if find /dev/vda1 >> /dev/null 2>&1; then
-                                PARTUUID=$(blkid -o export /dev/vda2 | grep PARTUUID)
-                            fi
+                                PARTUUID=$(blkid -o export /dev/vda2 | grep PARTUUID); fi
                             
                             # Edit /boot/loader/entries/arch.conf
                             rm /boot/loader/entries/arch.conf
@@ -500,7 +499,8 @@ EOF
         # sudo sh -c "echo '' >> /etc/pacman.conf"
         # sudo sh -c "echo '[archlinuxcn]' >> /etc/pacman.conf"
         # sudo sh -c "echo 'Server = https://repo.archlinuxcn.org/\$arch' >> /etc/pacman.conf"
-        sudo pacman -Syyu
+        sleep 2s
+        sudo pacman -Syyu || sudo pacman -Syyu
         # sudo pacman -S --noconfirm archlinuxcn-keyring &&
         # echo "( $(tput setaf 2)O$(tput sgr 0) ) 21.Add archlinuxcn repo" | tee -a ./log ||
         # echo "( $(tput setaf 1)X$(tput sgr 0) ) 21.Add archlinuxcn repo" | tee -a ./log 
@@ -569,7 +569,6 @@ EOF
         sudo pacman -S --noconfirm --needed pcsclite
         sudo pacman -S --noconfirm --needed perl-rename
         sudo pacman -S --noconfirm --needed pulseaudio-alsa
-        sudo pacman -S --noconfirm --needed profile-sync-daemon
         sudo pacman -S --noconfirm --needed qmmp
         sudo pacman -S --noconfirm --needed rclone
         sudo pacman -S --noconfirm --needed rsync
@@ -618,11 +617,10 @@ EOF
         ### sudo pacman -S --noconfirm --needed libva-vdpau-driver (vlc)
         ### sudo pacman -S --noconfirm --needed man-db
         ### sudo pacman -S --noconfirm --needed man-pages
-        ### sudo pacman -S --noconfirm --needed mtpfs
         ### sudo pacman -S --noconfirm --needed opera
         ### sudo pacman -S --noconfirm --needed opera-ffmpeg-codecs
-        ### sudo pacman -S --noconfirm --needed opusfile (qmmp)
         ### sudo pacman -S --noconfirm --needed plasma-browser-integration
+        ### sudo pacman -S --noconfirm --needed profile-sync-daemon
         ### sudo pacman -S --noconfirm --needed pulseaudio-bluetooth
         ### sudo pacman -S --noconfirm --needed qt5-imageformats
         ### sudo pacman -S --noconfirm --needed unzip-natspec
@@ -639,6 +637,7 @@ EOF
         # yay -S anydesk-bin
         # yay -S kde-servicemenus-rootactions
         # yay -S jellyfin
+        # yay -S mozplugger
         # yay -S powerdevil-light
         # yay -S qt-avif-image-plugin-git (qview)
         # yay -S qt5-heif-git (qview)
@@ -647,7 +646,7 @@ EOF
         # yay -S wine-x64
         
         ### yay -S ezusb (driver for EZ100PU)
-        ### yay -S isoimagewriter
+        ### yay -S ventoy-bin
         ### yay -S ksnip
         ### yay -S megacmd-bin
         ### yay -S ms-office-online
@@ -674,3 +673,7 @@ EOF
 
 ###  ERROR: One or more PGP signatures could not be verified
 ###  gpg --keyserver keys.gnupg.net --recv-keys <key>
+
+###  pacman
+###  ERROR: failed to update (unable to lock database)
+###  sudo rm /var/lib/pacman/db.lck
