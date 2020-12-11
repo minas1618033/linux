@@ -209,25 +209,25 @@ echo "
     echo
     case $PARTITION in
     1)  mount /dev/nvme0n1p2 /mnt &&
-        mkdir /mnt/boot &&
+        mkdir -p /mnt/boot &&
         mount /dev/nvme0n1p1 /mnt/boot &&
             echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log ||
             echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log
         ;;
     2)  mount /dev/sda2 /mnt &&
-        mkdir /mnt/boot &&
+        mkdir -p /mnt/boot &&
         mount /dev/sda1 /mnt/boot &&
             echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log ||
             echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log
         ;;
     4)  mount /dev/vda2 /mnt &&
-        mkdir /mnt/boot &&
+        mkdir -p /mnt/boot &&
         mount /dev/vda1 /mnt/boot &&
             echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log ||
             echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log
         ;;
     5)  mount /dev/vda2 /mnt &&
-        mkdir /mnt/boot &&
+        mkdir -p /mnt/boot &&
         mount /dev/vda1 /mnt/boot &&
             echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log ||
             echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log
@@ -312,7 +312,7 @@ echo "
                     # 2-5.Set the root password
                         echo
                         echo ":: Set ROOT account password" &&
-                        passwd &&
+                        passwd || (echo "Pelease input again:"; echo; passwd) &&
                             echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-5.Set the root password" | tee -a ./log ||
                             echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-5.Set the root password" | tee -a ./log
 
@@ -321,21 +321,17 @@ echo "
                         read -p ":: Add your user account : " username
                         echo $username >> username.tmp
                         useradd -m $username &&
-                        passwd $username &&
+                        passwd $username || (echo "Pelease input again:"; echo; passwd $username) &&
                         sed -i "/root/a $username ALL=(ALL) ALL" /etc/sudoers &&
                             echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-6.Add users account" | tee -a ./log ||
                             echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-6.Add users account" | tee -a ./log
 
                     # 2-7.systemd-boot Configuration
                         echo
-                        if [ -d "/boot/efi" ] ; then
-                            bootctl --path=/boot install &&
-                            if find /dev/nvme0n1 >> /dev/null 2>&1; then
-                                PARTUUID=$(blkid -o export /dev/nvme0n1p2 | grep PARTUUID); fi
-                            if find /dev/sda1 >> /dev/null 2>&1; then
-                                PARTUUID=$(blkid -o export /dev/sda2 | grep PARTUUID); fi
-                            if find /dev/vda1 >> /dev/null 2>&1; then
-                                PARTUUID=$(blkid -o export /dev/vda2 | grep PARTUUID); fi
+                        if find /dev/sda1 >> /dev/null 2>&1; then
+                            bootctl --path=/boot install
+                            PARTUUID=$(blkid -o export /dev/nvme0n1p2 | grep PARTUUID) ||
+                            PARTUUID=$(blkid -o export /dev/sda2 | grep PARTUUID)
                             
                             # Edit /boot/loader/entries/arch.conf
                             rm /boot/loader/entries/arch.conf
@@ -600,11 +596,12 @@ EOF
         ### sudo pacman -S --noconfirm --needed cups
         ### sudo pacman -S --noconfirm --needed dolphin-plugins
         ### sudo pacman -S --noconfirm --needed faad2 (qmmp)
+        ### sudo pacman -S --noconfirm --needed fcitx5-meta
+        ### sudo pacman -S --noconfirm --needed fcitx5-chewing
         ### sudo pacman -S --noconfirm --needed ffmpegthumbs
         ### sudo pacman -S --noconfirm --needed firewalld
         ### sudo pacman -S --noconfirm --needed k3b
         ### sudo pacman -S --noconfirm --needed kaccounts-providers
-        ### sudo pacman -S --noconfirm --needed kde-cli-tools
         ### sudo pacman -S --noconfirm --needed kdenetwork-filesharing
         ### sudo pacman -S --noconfirm --needed khotkeys
         ### sudo pacman -S --noconfirm --needed kio-fuse
