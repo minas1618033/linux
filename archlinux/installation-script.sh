@@ -104,6 +104,7 @@ echo "
 # 1-2.Update the system clock
     echo
     timedatectl set-ntp true &&
+    sleep 3s &&
         echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-2.Update the system clock" | tee -a ./log ||
         echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-2.Update the system clock" | tee -a ./log ;
 
@@ -273,9 +274,9 @@ echo "
                     
                     # 2-1.Install essential packages
                         if grep -q "AMD" "/proc/cpuinfo"; then
-                            pacman -S --noconfirm amd-ucode sudo nano git
+                            pacman -S --noconfirm amd-ucode opendoas nano git zsh
                         else
-                            pacman -S --noconfirm intel-ucode sudo nano git iwd
+                            pacman -S --noconfirm intel-ucode opendoas nano git zsh iwd
                         fi
                             echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-1.Install essential packages" | tee -a ./log ||
                             echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-1.Install essential packages" | tee -a ./log
@@ -320,9 +321,9 @@ echo "
                         echo
                         read -p ":: Add your user account : " username
                         echo $username >> username.tmp
-                        useradd -m $username &&
+                        useradd -m $username -G wheel -s /bin/zsh &&
                         passwd $username || (echo "Pelease input again:"; echo; passwd $username) &&
-                        sed -i "/root/a $username ALL=(ALL) ALL" /etc/sudoers &&
+                        echo "$username :wheel" >> /etc/doas.conf
                             echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-6.Add users account" | tee -a ./log ||
                             echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-6.Add users account" | tee -a ./log
 
@@ -382,24 +383,27 @@ echo "
                             read -n1 -p ":: Which is your connection, Ethernet or WiFi ? [E/W]: " ACTION
                             echo ; done
                                 case $ACTION in
-                                [eE]) echo "[Match]"     >> /etc/systemd/network/20-dhcp.network &&
-                                    echo "Name=enp*" >> /etc/systemd/network/20-dhcp.network &&
-                                    echo ""            >> /etc/systemd/network/20-dhcp.network &&
-                                    echo "[Network]"   >> /etc/systemd/network/20-dhcp.network &&
-                                    echo "DHCP=true"   >> /etc/systemd/network/20-dhcp.network &&
+                                [eE]) echo "[Match]"   >> /etc/systemd/network/20-wired.network &&
+                                    echo "Name=enp*"   >> /etc/systemd/network/20-wired.network &&
+                                    echo ""            >> /etc/systemd/network/20-wired.network &&
+                                    echo "[Network]"   >> /etc/systemd/network/20-wired.network &&
+                                    echo "DHCP=true"   >> /etc/systemd/network/20-wired.network &&
+                                    echo "DNSSEC=true" >> /etc/systemd/network/20-wired.network &&
                                         echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-8.systemd-networkd Configuration" | tee -a ./log ||
                                         echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-8.systemd-networkd Configuration" | tee -a ./log
                                     ;;
-                                [wW]) echo "[Match]"     >> /etc/systemd/network/20-dhcp.network &&
-                                    echo "Name=enp*" >> /etc/systemd/network/20-dhcp.network &&
-                                    echo ""            >> /etc/systemd/network/20-dhcp.network &&
-                                    echo "[Network]"   >> /etc/systemd/network/20-dhcp.network &&
-                                    echo "DHCP=true"   >> /etc/systemd/network/20-dhcp.network &&
+                                [wW]) echo "[Match]"   >> /etc/systemd/network/20-wired.network &&
+                                    echo "Name=enp*"   >> /etc/systemd/network/20-wired.network &&
+                                    echo ""            >> /etc/systemd/network/20-wired.network &&
+                                    echo "[Network]"   >> /etc/systemd/network/20-wired.network &&
+                                    echo "DHCP=true"   >> /etc/systemd/network/20-wired.network &&
+                                    echo "DNSSEC=true" >> /etc/systemd/network/20-wired.network &&
                                     echo "[Match]"     >> /etc/systemd/network/25-wireless.network &&
-                                    echo "Name=wlp*" >> /etc/systemd/network/25-wireless.network &&
+                                    echo "Name=wlp*"   >> /etc/systemd/network/25-wireless.network &&
                                     echo ""            >> /etc/systemd/network/25-wireless.network &&
                                     echo "[Network]"   >> /etc/systemd/network/25-wireless.network &&
                                     echo "DHCP=true"   >> /etc/systemd/network/25-wireless.network &&
+                                    echo "DNSSEC=true" >> /etc/systemd/network/25-wireless.network &&
                                         echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-8.systemd-networkd Configuration" | tee -a ./log ||
                                         echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-8.systemd-networkd Configuration" | tee -a ./log
                                     ;;
@@ -452,22 +456,29 @@ EOF
 #######################################################################################################################
 
         # 3-1.Enable network service
-        sudo systemctl start systemd-networkd
-        sudo systemctl enable systemd-networkd
-        sudo systemctl start systemd-resolved
-        sudo systemctl enable systemd-resolved
-        sudo ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
-        sudo mkdir /etc/systemd/resolved.conf.d
-        sudo sh -c "echo '[Resolve]' >> /etc/systemd/resolved.conf.d/dnssec.conf"
-        sudo sh -c "echo 'DNSOverTLS = true' >> /etc/systemd/resolved.conf.d/dnssec.conf"
-        sudo sh -c "echo 'DNSSEC = false' >> /etc/systemd/resolved.conf.d/dnssec.conf"
-        sudo sh -c "echo 'Cache = true' >> /etc/systemd/resolved.conf.d/dnssec.conf"
+        doas systemctl start systemd-networkd
+        doas systemctl enable systemd-networkd
+        doas systemctl start systemd-resolved
+        doas systemctl enable systemd-resolved
+        doas ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+        doas mkdir /etc/systemd/resolved.conf.d
+        doas sh -c "echo '[Resolve]'           >> /etc/systemd/resolved.conf.d/dnssec.conf"
+        doas sh -c "echo 'DNS = 2001:de4::101' >> /etc/systemd/resolved.conf.d/dnssec.conf"
+        doas sh -c "echo 'DNSSEC = true'   >> /etc/systemd/resolved.conf.d/dnssec.conf"
+        doas sh -c "echo 'DNSOverTLS = true'       >> /etc/systemd/resolved.conf.d/dnssec.conf"
+        doas sh -c "echo 'Cache = true'        >> /etc/systemd/resolved.conf.d/dnssec.conf"
 
+        doas sh -c "echo '[Resolve]'                     >> /etc/systemd/resolved.conf.d/fallback_dns.conf"
+        doas sh -c "echo 'FallbackDNS = 101.101.101.101' >> /etc/systemd/resolved.conf.d/fallback_dns.conf"
+        doas sh -c "echo 'FallbackDNS = 1.1.1.1'         >> /etc/systemd/resolved.conf.d/fallback_dns.conf"
+        doas sh -c "echo 'FallbackDNS = 168.95.1.1'      >> /etc/systemd/resolved.conf.d/fallback_dns.conf"
+        doas sh -c "echo 'FallbackDNS = 8.8.8.8'         >> /etc/systemd/resolved.conf.d/fallback_dns.conf"
+        
         if pacman -Qs iwd ; then
-            sudo systemctl start iwd
-            sudo systemctl enable iwd
-            sudo iwctl wlan0 scan
-            sudo iwctl wlan0 connect CHT_2.4G
+            doas systemctl start iwd
+            doas systemctl enable iwd
+            doas iwctl wlan0 scan
+            doas iwctl wlan0 connect CHT_2.4G
         fi
         
         ping -c 3 www.google.com > /dev/null &&
@@ -475,7 +486,7 @@ EOF
         echo "( $(tput setaf 1)X$(tput sgr 0) ) 3-1.Enable network service" | tee -a ./log
 
         # 3-2.Enable SSD Trim
-        sudo systemctl enable fstrim.timer &&
+        doas systemctl enable fstrim.timer &&
         echo "( $(tput setaf 2)O$(tput sgr 0) ) 3-2.Enable SSD Trim" | tee -a ./log ||
         echo "( $(tput setaf 1)X$(tput sgr 0) ) 3-2.Enable SSD Trim" | tee -a ./log 
 
@@ -492,12 +503,14 @@ EOF
         echo "( $(tput setaf 1)X$(tput sgr 0) ) 3-3.Automount disk partitions" | tee -a ./log 
         
         # 3-4.Add archlinuxcn repo
-        # sudo sh -c "echo '' >> /etc/pacman.conf"
-        # sudo sh -c "echo '[archlinuxcn]' >> /etc/pacman.conf"
-        # sudo sh -c "echo 'Server = https://repo.archlinuxcn.org/\$arch' >> /etc/pacman.conf"
-        sleep 2s
-        sudo pacman -Syyu || sudo pacman -Syyu
-        # sudo pacman -S --noconfirm archlinuxcn-keyring &&
+        # doas sh -c "echo '' >> /etc/pacman.conf"
+        # doas sh -c "echo '[archlinuxcn]' >> /etc/pacman.conf"
+        # doas sh -c "echo 'Server = https://repo.archlinuxcn.org/\$arch' >> /etc/pacman.conf"
+        echo "Checking your connection status......"
+        sleep 3s
+        ping -c 2 www.google.com > /dev/null &&
+        doas pacman -Syyu || doas pacman -Syyu
+        # doas pacman -S --noconfirm archlinuxcn-keyring &&
         # echo "( $(tput setaf 2)O$(tput sgr 0) ) 21.Add archlinuxcn repo" | tee -a ./log ||
         # echo "( $(tput setaf 1)X$(tput sgr 0) ) 21.Add archlinuxcn repo" | tee -a ./log 
 
@@ -511,119 +524,120 @@ EOF
         #     esac
 
         # 3-5.Install GPU driver, font and plasma desktop
-        sudo pacman -S --noconfirm --needed noto-fonts
-        sudo pacman -S --noconfirm --needed xorg-server
-        sudo pacman -S --noconfirm --needed nvidia
-        sudo pacman -S --noconfirm --needed breeze
-        sudo pacman -S --noconfirm --needed breeze-gtk
-        sudo pacman -S --noconfirm --needed drkonqi
-        sudo pacman -S --noconfirm --needed kde-gtk-config
-        sudo pacman -S --noconfirm --needed kdeplasma-addons
-        sudo pacman -S --noconfirm --needed kinfocenter
-        sudo pacman -S --noconfirm --needed ksysguard
-        sudo pacman -S --noconfirm --needed plasma-desktop
-        sudo pacman -S --noconfirm --needed plasma-integration
-        sudo pacman -S --noconfirm --needed plasma-pa
-        sudo pacman -S --noconfirm --needed plasma-workspace
-        sudo pacman -S --noconfirm --needed sddm-kcm
-        sudo pacman -S --noconfirm --needed user-manager
+        doas pacman -S --noconfirm --needed noto-fonts
+        doas pacman -S --noconfirm --needed noto-fonts-cjk
+        doas pacman -S --noconfirm --needed xorg-server
+        doas pacman -S --noconfirm --needed nvidia
+        doas pacman -S --noconfirm --needed breeze
+        doas pacman -S --noconfirm --needed breeze-gtk
+        doas pacman -S --noconfirm --needed drkonqi
+        doas pacman -S --noconfirm --needed kde-gtk-config
+        doas pacman -S --noconfirm --needed kdeplasma-addons
+        doas pacman -S --noconfirm --needed kinfocenter
+        doas pacman -S --noconfirm --needed ksysguard
+        doas pacman -S --noconfirm --needed kwrited
+        doas pacman -S --noconfirm --needed plasma-desktop
+        doas pacman -S --noconfirm --needed plasma-disks
+        doas pacman -S --noconfirm --needed plasma-integration
+        doas pacman -S --noconfirm --needed plasma-pa
+        doas pacman -S --noconfirm --needed plasma-workspace
+        doas pacman -S --noconfirm --needed sddm-kcm
+        doas pacman -S --noconfirm --needed user-manager
 
         # 3-6.Install applications from official repo
-        sudo pacman -S --noconfirm --needed ark
-        sudo pacman -S --noconfirm --needed baidupcs-go
-        # sudo pacman -S --noconfirm --needed binutils
-        sudo pacman -S --noconfirm --needed bleachbit
-        sudo pacman -S --noconfirm --needed code
-        sudo pacman -S --noconfirm --needed cronie
-        sudo pacman -S --noconfirm --needed dolphin
-        sudo pacman -S --noconfirm --needed exfatprogs
-        # sudo pacman -S --noconfirm --needed fakeroot
-        sudo pacman -S --noconfirm --needed firefox
-        sudo pacman -S --noconfirm --needed gimp
-        sudo pacman -S --noconfirm --needed gnome-boxes
-        sudo pacman -S --noconfirm --needed ibus
-        sudo pacman -S --noconfirm --needed kate
-        sudo pacman -S --noconfirm --needed kcalc
-        sudo pacman -S --noconfirm --needed kdegraphics-thumbnailers
-        sudo pacman -S --noconfirm --needed kdenlive
-        sudo pacman -S --noconfirm --needed kdialog
-        sudo pacman -S --noconfirm --needed keepassxc
-        sudo pacman -S --noconfirm --needed kolourpaint
-        sudo pacman -S --noconfirm --needed kompare
-        sudo pacman -S --noconfirm --needed konsole
-        sudo pacman -S --noconfirm --needed krename
-        sudo pacman -S --noconfirm --needed ksystemlog
-        sudo pacman -S --noconfirm --needed libreoffice-still
-        sudo pacman -S --noconfirm --needed libreoffice-still-zh-tw
-        sudo pacman -S --noconfirm --needed markdownpart
-        sudo pacman -S --noconfirm --needed mpg123
-        sudo pacman -S --noconfirm --needed mpv
-        sudo pacman -S --noconfirm --needed noto-fonts-cjk
-        sudo pacman -S --noconfirm --needed okular
-        sudo pacman -S --noconfirm --needed p7zip
-        sudo pacman -S --noconfirm --needed partitionmanager
-        sudo pacman -S --noconfirm --needed pcsclite
-        sudo pacman -S --noconfirm --needed perl-rename
-        sudo pacman -S --noconfirm --needed pulseaudio-alsa
-        sudo pacman -S --noconfirm --needed qmmp
-        sudo pacman -S --noconfirm --needed rclone
-        sudo pacman -S --noconfirm --needed rsync
-        sudo pacman -S --noconfirm --needed skanlite
-        sudo pacman -S --noconfirm --needed spectacle
-        sudo pacman -S --noconfirm --needed telegram-desktop
-        sudo pacman -S --noconfirm --needed unrar
-        sudo pacman -S --noconfirm --needed xdg-user-dirs
-        sudo pacman -S --noconfirm --needed yakuake
-        sudo pacman -S --noconfirm --needed youtube-dl
-        sudo pacman -S --noconfirm --needed zsh
-        sudo pacman -S --noconfirm --needed zsh-theme-powerlevel10k
+        doas pacman -S --noconfirm --needed ark
+        doas pacman -S --noconfirm --needed baidupcs-go
+        doas pacman -S --noconfirm --needed bleachbit
+        doas pacman -S --noconfirm --needed code
+        doas pacman -S --noconfirm --needed cronie
+        doas pacman -S --noconfirm --needed dolphin
+        doas pacman -S --noconfirm --needed exfatprogs
+        doas pacman -S --noconfirm --needed firefox
+        doas pacman -S --noconfirm --needed gimp
+        doas pacman -S --noconfirm --needed gnome-boxes
+        doas pacman -S --noconfirm --needed ibus
+        doas pacman -S --noconfirm --needed imagemagick
+        doas pacman -S --noconfirm --needed kate
+        doas pacman -S --noconfirm --needed kcalc
+        doas pacman -S --noconfirm --needed kdegraphics-thumbnailers
+        doas pacman -S --noconfirm --needed kdenlive
+        doas pacman -S --noconfirm --needed kdialog
+        doas pacman -S --noconfirm --needed keepassxc
+        doas pacman -S --noconfirm --needed kolourpaint
+        doas pacman -S --noconfirm --needed kompare
+        doas pacman -S --noconfirm --needed konsole
+        doas pacman -S --noconfirm --needed krename
+        doas pacman -S --noconfirm --needed ksystemlog
+        doas pacman -S --noconfirm --needed libreoffice-still
+        doas pacman -S --noconfirm --needed libreoffice-still-zh-tw
+        doas pacman -S --noconfirm --needed markdownpart
+        doas pacman -S --noconfirm --needed mpg123
+        doas pacman -S --noconfirm --needed mpv
+        doas pacman -S --noconfirm --needed nftables
+        doas pacman -S --noconfirm --needed okular
+        doas pacman -S --noconfirm --needed opusfile
+        doas pacman -S --noconfirm --needed p7zip
+        doas pacman -S --noconfirm --needed partitionmanager
+        doas pacman -S --noconfirm --needed pcsclite
+        doas pacman -S --noconfirm --needed perl-rename
+        doas pacman -S --noconfirm --needed pulseaudio-alsa
+        doas pacman -S --noconfirm --needed qmmp
+        doas pacman -S --noconfirm --needed rclone
+        doas pacman -S --noconfirm --needed rsync
+        doas pacman -S --noconfirm --needed samba
+        doas pacman -S --noconfirm --needed skanlite
+        doas pacman -S --noconfirm --needed spectacle
+        doas pacman -S --noconfirm --needed telegram-desktop
+        doas pacman -S --noconfirm --needed unrar
+        doas pacman -S --noconfirm --needed xdg-user-dirs
+        doas pacman -S --noconfirm --needed yakuake
+        doas pacman -S --noconfirm --needed youtube-dl
+        doas pacman -S --noconfirm --needed zsh
+        doas pacman -S --noconfirm --needed zsh-theme-powerlevel10k
 
         # 3-7.Install applications from archlinuxcn repo
-        # sudo pacman -S --noconfirm megatools
-        # sudo pacman -S --noconfirm ibus-libzhuyin
-        # sudo pacman -S --noconfirm qbittorrent-enhanced-git
-        # sudo pacman -S --noconfirm qview
-        # sudo pacman -S --noconfirm rclone-browser
-        # sudo pacman -S --noconfirm safeeyes
-        # sudo pacman -S --noconfirm yay
-        # sudo pacman -S --noconfirm ytop
+        # doas pacman -S --noconfirm megatools
+        # doas pacman -S --noconfirm ibus-libzhuyin
+        # doas pacman -S --noconfirm qbittorrent-enhanced-git
+        # doas pacman -S --noconfirm qview
+        # doas pacman -S --noconfirm rclone-browser
+        # doas pacman -S --noconfirm safeeyes
+        # doas pacman -S --noconfirm yay
+        # doas pacman -S --noconfirm ytop
 
-        ### sudo pacman -S --noconfirm --needed bluedevil
-        ### sudo pacman -S --noconfirm --needed caprine
-        ### sudo pacman -S --noconfirm --needed clipgrab
-        ### sudo pacman -S --noconfirm --needed converseen
-        ### sudo pacman -S --noconfirm --needed crow-translate
-        ### sudo pacman -S --noconfirm --needed cups
-        ### sudo pacman -S --noconfirm --needed dolphin-plugins
-        ### sudo pacman -S --noconfirm --needed faad2 (qmmp)
-        ### sudo pacman -S --noconfirm --needed fcitx5-meta
-        ### sudo pacman -S --noconfirm --needed fcitx5-chewing
-        ### sudo pacman -S --noconfirm --needed ffmpegthumbs
-        ### sudo pacman -S --noconfirm --needed firewalld
-        ### sudo pacman -S --noconfirm --needed k3b
-        ### sudo pacman -S --noconfirm --needed kaccounts-providers
-        ### sudo pacman -S --noconfirm --needed kdenetwork-filesharing
-        ### sudo pacman -S --noconfirm --needed khotkeys
-        ### sudo pacman -S --noconfirm --needed kio-fuse
-        ### sudo pacman -S --noconfirm --needed kfind
-        ### sudo pacman -S --noconfirm --needed kscreen
-        ### sudo pacman -S --noconfirm --needed ktimer
-        ### sudo pacman -S --noconfirm --needed kwayland-integration
-        ### sudo pacman -S --noconfirm --needed kwrited
-        ### sudo pacman -S --noconfirm --needed libmpcdec (qmmp)
-        ### sudo pacman -S --noconfirm --needed libva-vdpau-driver (vlc)
-        ### sudo pacman -S --noconfirm --needed man-db
-        ### sudo pacman -S --noconfirm --needed man-pages
-        ### sudo pacman -S --noconfirm --needed opera
-        ### sudo pacman -S --noconfirm --needed opera-ffmpeg-codecs
-        ### sudo pacman -S --noconfirm --needed plasma-browser-integration
-        ### sudo pacman -S --noconfirm --needed profile-sync-daemon
-        ### sudo pacman -S --noconfirm --needed pulseaudio-bluetooth
-        ### sudo pacman -S --noconfirm --needed qt5-imageformats
-        ### sudo pacman -S --noconfirm --needed unzip-natspec
-        ### sudo pacman -S --noconfirm --needed wine
-        ### sudo pacman -S --noconfirm --needed xdg-desktop-portal-kde (flatpak)
-        ### sudo pacman -S virtualbox
+        ### doas pacman -S --noconfirm --needed bluedevil
+        ### doas pacman -S --noconfirm --needed caprine ---------- Facebook Messenger desktop app
+        ### doas pacman -S --noconfirm --needed clipgrab ---------- Video downloader
+        ### doas pacman -S --noconfirm --needed converseen ---------- Image converter
+        ### doas pacman -S --noconfirm --needed crow-translate
+        ### doas pacman -S --noconfirm --needed cups
+        ### doas pacman -S --noconfirm --needed dolphin-plugins
+        ### doas pacman -S --noconfirm --needed faad2 ---------- qmmp plugin
+        ### doas pacman -S --noconfirm --needed fcitx5-meta
+        ### doas pacman -S --noconfirm --needed fcitx5-chewing
+        ### doas pacman -S --noconfirm --needed ffmpegthumbs
+        ### doas pacman -S --noconfirm --needed firewalld
+        ### doas pacman -S --noconfirm --needed k3b ---------- CD burning app
+        ### doas pacman -S --noconfirm --needed kaccounts-providers
+        ### doas pacman -S --noconfirm --needed kdenetwork-filesharing
+        ### doas pacman -S --noconfirm --needed khotkeys
+        ### doas pacman -S --noconfirm --needed kio-fuse
+        ### doas pacman -S --noconfirm --needed kfind
+        ### doas pacman -S --noconfirm --needed kscreen
+        ### doas pacman -S --noconfirm --needed ktimer
+        ### doas pacman -S --noconfirm --needed kwayland-integration
+        ### doas pacman -S --noconfirm --needed kwrited
+        ### doas pacman -S --noconfirm --needed libmpcdec ---------- qmmp MusePack decoding library
+        ### doas pacman -S --noconfirm --needed libva-vdpau-driver (vlc)
+        ### doas pacman -S --noconfirm --needed opera
+        ### doas pacman -S --noconfirm --needed opera-ffmpeg-codecs
+        ### doas pacman -S --noconfirm --needed plasma-browser-integration
+        ### doas pacman -S --noconfirm --needed profile-sync-daemon
+        ### doas pacman -S --noconfirm --needed pulseaudio-bluetooth
+        ### doas pacman -S --noconfirm --needed qt5-imageformats
+        ### doas pacman -S --noconfirm --needed unzip-natspec
+        ### doas pacman -S --noconfirm --needed xdg-desktop-portal-kde (flatpak)
+        ### doas pacman -S virtualbox
 
         # 3-8.Install applications from aur repo
 
@@ -634,7 +648,6 @@ EOF
         # yay -S anydesk-bin
         # yay -S kde-servicemenus-rootactions
         # yay -S jellyfin
-        # yay -S mozplugger
         # yay -S powerdevil-light
         # yay -S qt-avif-image-plugin-git (qview)
         # yay -S qt5-heif-git (qview)
@@ -650,10 +663,11 @@ EOF
         ### yay -S stacer
         ### yay -S tiny-media-manager
 
-        # sudo sh ../../../Config/Sophos-Antivirus-free/install.sh
-        # sudo pacman -Rsn --noconfirm xdg-user-dirs
-
-        sudo systemctl enable sddm
+        # doas sh ../../../Config/Sophos-Antivirus-free/install.sh
+        # doas pacman -Rsn --noconfirm xdg-user-dirs
+        doas systemctl start nftables.service
+        doas systemctl enable nftables.service
+        doas systemctl enable sddm
     }
     
     echo
@@ -673,4 +687,4 @@ EOF
 
 ###  pacman
 ###  ERROR: failed to update (unable to lock database)
-###  sudo rm /var/lib/pacman/db.lck
+###  doas rm /var/lib/pacman/db.lck
