@@ -292,6 +292,10 @@ echo "
                         echo
                         sed -i '/#en_US.UTF-8 UTF-8/a\en_US.UTF-8 UTF-8' /etc/locale.gen &&
                         sed -i '/#en_US.UTF-8 UTF-8/d' /etc/locale.gen &&
+                        sed -i '/#ja_JP.UTF-8 UTF-8/a\ja_JP.UTF-8 UTF-8' /etc/locale.gen &&
+                        sed -i '/#ja_JP.UTF-8 UTF-8/d' /etc/locale.gen &&
+                        sed -i '/#zh_CN.UTF-8 UTF-8/a\zh_CN.UTF-8 UTF-8' /etc/locale.gen &&
+                        sed -i '/#zh_CN.UTF-8 UTF-8/d' /etc/locale.gen &&
                         sed -i '/#zh_TW.UTF-8 UTF-8/a\zh_TW.UTF-8 UTF-8' /etc/locale.gen &&
                         sed -i '/#zh_TW.UTF-8 UTF-8/d' /etc/locale.gen &&
                         locale-gen &&
@@ -323,7 +327,7 @@ echo "
                         echo $username >> username.tmp
                         useradd -m $username -G wheel -s /bin/zsh &&
                         passwd $username || (echo "Pelease input again:"; echo; passwd $username) &&
-                        echo "$username :wheel" >> /etc/doas.conf
+                        echo "permit persist :wheel" >> /etc/doas.conf
                             echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-6.Add users account" | tee -a ./log ||
                             echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-6.Add users account" | tee -a ./log
 
@@ -388,7 +392,6 @@ echo "
                                     echo ""            >> /etc/systemd/network/20-wired.network &&
                                     echo "[Network]"   >> /etc/systemd/network/20-wired.network &&
                                     echo "DHCP=true"   >> /etc/systemd/network/20-wired.network &&
-                                    echo "DNSSEC=true" >> /etc/systemd/network/20-wired.network &&
                                         echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-8.systemd-networkd Configuration" | tee -a ./log ||
                                         echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-8.systemd-networkd Configuration" | tee -a ./log
                                     ;;
@@ -397,13 +400,11 @@ echo "
                                     echo ""            >> /etc/systemd/network/20-wired.network &&
                                     echo "[Network]"   >> /etc/systemd/network/20-wired.network &&
                                     echo "DHCP=true"   >> /etc/systemd/network/20-wired.network &&
-                                    echo "DNSSEC=true" >> /etc/systemd/network/20-wired.network &&
                                     echo "[Match]"     >> /etc/systemd/network/25-wireless.network &&
                                     echo "Name=wlp*"   >> /etc/systemd/network/25-wireless.network &&
                                     echo ""            >> /etc/systemd/network/25-wireless.network &&
                                     echo "[Network]"   >> /etc/systemd/network/25-wireless.network &&
                                     echo "DHCP=true"   >> /etc/systemd/network/25-wireless.network &&
-                                    echo "DNSSEC=true" >> /etc/systemd/network/25-wireless.network &&
                                         echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-8.systemd-networkd Configuration" | tee -a ./log ||
                                         echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-8.systemd-networkd Configuration" | tee -a ./log
                                     ;;
@@ -463,7 +464,7 @@ EOF
         doas ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
         doas mkdir /etc/systemd/resolved.conf.d
         doas sh -c "echo '[Resolve]'           >> /etc/systemd/resolved.conf.d/dnssec.conf"
-        doas sh -c "echo 'DNS = 2001:de4::101' >> /etc/systemd/resolved.conf.d/dnssec.conf"
+        doas sh -c "echo 'DNS = 2606:4700:4700::1111' >> /etc/systemd/resolved.conf.d/dnssec.conf"
         doas sh -c "echo 'DNSSEC = true'   >> /etc/systemd/resolved.conf.d/dnssec.conf"
         doas sh -c "echo 'DNSOverTLS = true'       >> /etc/systemd/resolved.conf.d/dnssec.conf"
         doas sh -c "echo 'Cache = true'        >> /etc/systemd/resolved.conf.d/dnssec.conf"
@@ -552,10 +553,11 @@ EOF
         doas pacman -S --noconfirm --needed cronie
         doas pacman -S --noconfirm --needed dolphin
         doas pacman -S --noconfirm --needed exfatprogs
+        doas pacman -S --noconfirm --needed fcitx5-im
+        doas pacman -S --noconfirm --needed fcitx5-chewing
         doas pacman -S --noconfirm --needed firefox
         doas pacman -S --noconfirm --needed gimp
         doas pacman -S --noconfirm --needed gnome-boxes
-        doas pacman -S --noconfirm --needed ibus
         doas pacman -S --noconfirm --needed imagemagick
         doas pacman -S --noconfirm --needed kate
         doas pacman -S --noconfirm --needed kcalc
@@ -592,7 +594,6 @@ EOF
         doas pacman -S --noconfirm --needed xdg-user-dirs
         doas pacman -S --noconfirm --needed yakuake
         doas pacman -S --noconfirm --needed youtube-dl
-        doas pacman -S --noconfirm --needed zsh
         doas pacman -S --noconfirm --needed zsh-theme-powerlevel10k
 
         # 3-7.Install applications from archlinuxcn repo
@@ -613,10 +614,9 @@ EOF
         ### doas pacman -S --noconfirm --needed cups
         ### doas pacman -S --noconfirm --needed dolphin-plugins
         ### doas pacman -S --noconfirm --needed faad2 ---------- qmmp plugin
-        ### doas pacman -S --noconfirm --needed fcitx5-meta
-        ### doas pacman -S --noconfirm --needed fcitx5-chewing
         ### doas pacman -S --noconfirm --needed ffmpegthumbs
         ### doas pacman -S --noconfirm --needed firewalld
+        ### doas pacman -S --noconfirm --needed ibus
         ### doas pacman -S --noconfirm --needed k3b ---------- CD burning app
         ### doas pacman -S --noconfirm --needed kaccounts-providers
         ### doas pacman -S --noconfirm --needed kdenetwork-filesharing
@@ -625,13 +625,10 @@ EOF
         ### doas pacman -S --noconfirm --needed kfind
         ### doas pacman -S --noconfirm --needed kscreen
         ### doas pacman -S --noconfirm --needed ktimer
-        ### doas pacman -S --noconfirm --needed kwayland-integration
-        ### doas pacman -S --noconfirm --needed kwrited
         ### doas pacman -S --noconfirm --needed libmpcdec ---------- qmmp MusePack decoding library
         ### doas pacman -S --noconfirm --needed libva-vdpau-driver (vlc)
         ### doas pacman -S --noconfirm --needed opera
         ### doas pacman -S --noconfirm --needed opera-ffmpeg-codecs
-        ### doas pacman -S --noconfirm --needed plasma-browser-integration
         ### doas pacman -S --noconfirm --needed profile-sync-daemon
         ### doas pacman -S --noconfirm --needed pulseaudio-bluetooth
         ### doas pacman -S --noconfirm --needed qt5-imageformats
