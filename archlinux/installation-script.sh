@@ -24,10 +24,9 @@
 # |-- 1-3.Identify UEFI/BIOS
 # |-- 1-4.Partition the disks
 # |-- 1-5.Mount the file systems
-# |-- 1-6.Select the mirrors
-# |-- 1-7.Install linux kernel & base packages
-# |-- 1-8.Generate fstab
-# |-- 1-9.Change root into the new system
+# |-- 1-6.Install linux kernel & base packages
+# |-- 1-7.Generate fstab
+# |-- 1-8.Change root into the new system
 # |
 # |STEP2 Configure the system
 # |-- 2-1.Install essential packages
@@ -45,18 +44,10 @@
 # |-- 3-2.Enable SSD Trim
 # |-- 3-3.Automount disk partitions
 # |-- 3-4.Add archlinuxcn repo
-# |-- 3-5.Install GPU driver, font and plasma desktop
-# |-- 3-6.Install applications from official repo
-# |-- 3-7.Install applications from archlinuxcn repo
-# |-- 3-8.Install applications from aur repo
-# |-- 
-# |-- 
-# |-- 
-# |-- 
-# |-- 
-# |-- 
-# |-- 
-
+# |-- 3-5.Install applications from official repo
+# |-- 3-6.Install applications from unofficial repo
+#
+#
 #######################################################################################################################
 ############################################### STEP0 Pre-installation ################################################
 #######################################################################################################################
@@ -133,29 +124,29 @@ echo "
             echo
             case $ACTION in
                 1)  mkfs.vfat /dev/nvme0n1p1 &&
-                    mkfs.ext4 /dev/nvme0n1p2 &&
+                    mkfs.xfs /dev/nvme0n1p2 &&
                         echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
                         echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log
                     ;;
                 2)  mkfs.vfat /dev/nvme0n1p1 &&
-                    mkfs.ext4 /dev/nvme0n1p2 &&
-                    mkfs.ext4 /dev/sda1 &&
-                    mkfs.ext4 /dev/sdb1
+                    mkfs.xfs /dev/nvme0n1p2 &&
+                    mkfs.xfs /dev/sda1 &&
+                    mkfs.xfs /dev/sdb1
                         echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
                         echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log
                     ;;
                 3)  parted -s /dev/nvme0n1 mklabel gpt &&
-                    parted -s /dev/nvme0n1 mkpart "esp" fat32 '0%' 300MB &&
+                    parted -s /dev/nvme0n1 mkpart "esp" fat32 '0%' 200MB &&
                     parted -s /dev/nvme0n1 set 1 esp on &&
-                    parted -s /dev/nvme0n1 mkpart "root" ext4 300MiB '100%' &&
+                    parted -s /dev/nvme0n1 mkpart "root" xfs 200MiB '100%' &&
                     parted -s /dev/sda mklabel gpt &&
-                    parted -s /dev/sda mkpart "2000G" ext4 '0%' '100%' &&
+                    parted -s /dev/sda mkpart "disk2" xfs '0%' '100%' &&
                     parted -s /dev/sdb mklabel gpt &&
-                    parted -s /dev/sdb mkpart "500G" ext4 '0%' '100%' &&
+                    parted -s /dev/sdb mkpart "disk1" xfs '0%' '100%' &&
                     mkfs.vfat /dev/nvme0n1p1 &&
-                    mkfs.ext4 /dev/nvme0n1p2 &&
-                    mkfs.ext4 /dev/sda1 &&
-                    mkfs.ext4 /dev/sdb1 &&
+                    mkfs.xfs /dev/nvme0n1p2 &&
+                    mkfs.xfs /dev/sda1 &&
+                    mkfs.xfs /dev/sdb1 &&
                         echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
                         echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log
                     ;;
@@ -169,16 +160,16 @@ echo "
             echo
             case $ACTION in
                 1)  mkfs.vfat /dev/sda1 &&
-                    mkfs.ext4 /dev/sda2
+                    mkfs.xfs /dev/sda2
                         echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
                         echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log
                     ;;
                 2)  parted -s /dev/sda mklabel gpt &&
                     parted -s /dev/sda mkpart "esp" fat32 '0%' 300MB &&
                     parted -s /dev/sda set 1 esp on &&
-                    parted -s /dev/sda mkpart "root" ext4 300MiB '100%' &&
+                    parted -s /dev/sda mkpart "root" xfs 300MiB '100%' &&
                     mkfs.vfat /dev/sda1 &&
-                    mkfs.ext4 /dev/sda2 &&
+                    mkfs.xfs /dev/sda2 &&
                         echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
                         echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log
                     ;;
@@ -187,17 +178,17 @@ echo "
         3)  parted -s /dev/vda mklabel gpt &&
             parted -s /dev/vda mkpart "esp" fat32 '0%' 200MB &&
             parted -s /dev/vda set 1 esp on &&
-            parted -s /dev/vda mkpart "root" ext4 200MiB '100%' &&
+            parted -s /dev/vda mkpart "root" xfs 200MiB '100%' &&
             mkfs.vfat /dev/sda1 &&
-            mkfs.ext4 /dev/sda2
+            mkfs.xfs /dev/sda2
                 echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
                 echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log
             ;;
         4)  parted -s /dev/vda mkpart primary fat32 '0%' 200MB &&
             parted -s /dev/vda set 1 boot on &&
-            parted -s /dev/vda mkpart primary ext4 200MiB '100%' &&
+            parted -s /dev/vda mkpart primary xfs 200MiB '100%' &&
             mkfs.vfat /dev/vda1 &&
-            mkfs.ext4 /dev/vda2
+            mkfs.xfs /dev/vda2
                 echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
                 echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log
             ;;
@@ -235,27 +226,20 @@ echo "
         ;;
     esac
 
-# 1-6.Select the mirrors
-    echo
-    sed -i '11iServer = https://archlinux.ccns.ncku.edu.tw/archlinux/$repo/os/$arch' /etc/pacman.d/mirrorlist &&
-    sed -i '12iServer = http://archlinux.cs.nctu.edu.tw/$repo/os/$arch' /etc/pacman.d/mirrorlist &&
-        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-6.Select the mirrors" | tee -a ./log ||
-        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-6.Select the mirrors" | tee -a ./log
-
-# 1-7.Install linux kernel & base packages
+# 1-6.Install linux kernel & base packages
     echo
     pacstrap /mnt base linux linux-firmware &&
         echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-7.Install linux kernel & base packages" | tee -a ./log ||
         echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-7.Install linux kernel & base packages" | tee -a ./log
 
-# 1-8.Generate fstab
+# 1-7.Generate fstab
     echo
     genfstab -U /mnt >> /mnt/etc/fstab &&
     cat /mnt/etc/fstab &&
         echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-8.Generate fstab" | tee -a ./log ||
         echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-8.Generate fstab" | tee -a ./log
 
-# 1-9.Change root into the new system
+# 1-8.Change root into the new system
     echo
     cat ./log
     echo
@@ -274,7 +258,7 @@ echo "
                     
                     # 2-1.Install essential packages
                         if grep -q "AMD" "/proc/cpuinfo"; then
-                            pacman -S --noconfirm amd-ucode opendoas nano git zsh
+                            pacman -S --noconfirm amd-ucode opendoas nano git xfsprogs zsh
                         else
                             pacman -S --noconfirm intel-ucode opendoas nano git zsh iwd
                         fi
@@ -482,6 +466,8 @@ EOF
             doas iwctl wlan0 connect CHT_2.4G
         fi
         
+        echo "Checking your connection status......"
+        sleep 3s
         ping -c 3 www.google.com > /dev/null &&
         echo "( $(tput setaf 2)O$(tput sgr 0) ) 3-1.Enable network service" | tee -a ./log ||
         echo "( $(tput setaf 1)X$(tput sgr 0) ) 3-1.Enable network service" | tee -a ./log
@@ -495,7 +481,7 @@ EOF
         #    # /dev/nvme0n1p1
         #    UUID={UUID} /boot/efi vfat rw,noatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 2
         #    # /dev/nvme0n1p2
-        #    UUID={UUID} / ext4 defaults,noatime 0 1
+        #    UUID={UUID} / xfs defaults,noatime 0 1
         #    # /dev/sdb1
         #    UUID={UUID} /home/zelko/Downloads ext4 defaults,noatime 0 2
         #    # /dev/sda1
@@ -507,9 +493,7 @@ EOF
         # doas sh -c "echo '' >> /etc/pacman.conf"
         # doas sh -c "echo '[archlinuxcn]' >> /etc/pacman.conf"
         # doas sh -c "echo 'Server = https://repo.archlinuxcn.org/\$arch' >> /etc/pacman.conf"
-        echo "Checking your connection status......"
-        sleep 3s
-        ping -c 2 www.google.com > /dev/null &&
+        
         doas pacman -Syyu || doas pacman -Syyu
         # doas pacman -S --noconfirm archlinuxcn-keyring &&
         # echo "( $(tput setaf 2)O$(tput sgr 0) ) 21.Add archlinuxcn repo" | tee -a ./log ||
@@ -524,7 +508,9 @@ EOF
         #         *) exit ;;
         #     esac
 
-        # 3-5.Install GPU driver, font and plasma desktop
+        # 3-5.Install applications from official repo
+        
+        ## 3-5-1.GPU driver, font and plasma desktop
         doas pacman -S --noconfirm --needed noto-fonts
         doas pacman -S --noconfirm --needed noto-fonts-cjk
         doas pacman -S --noconfirm --needed xorg-server
@@ -535,136 +521,143 @@ EOF
         doas pacman -S --noconfirm --needed kde-gtk-config
         doas pacman -S --noconfirm --needed kdeplasma-addons
         doas pacman -S --noconfirm --needed kinfocenter
-        doas pacman -S --noconfirm --needed ksysguard
         doas pacman -S --noconfirm --needed kwrited
         doas pacman -S --noconfirm --needed plasma-desktop
         doas pacman -S --noconfirm --needed plasma-disks
         doas pacman -S --noconfirm --needed plasma-integration
         doas pacman -S --noconfirm --needed plasma-pa
+        doas pacman -S --noconfirm --needed plasma-systemmonitor
         doas pacman -S --noconfirm --needed plasma-workspace
         doas pacman -S --noconfirm --needed sddm-kcm
         doas pacman -S --noconfirm --needed user-manager
-
-        # 3-6.Install applications from official repo
-        doas pacman -S --noconfirm --needed ark
-        doas pacman -S --noconfirm --needed baidupcs-go
-        doas pacman -S --noconfirm --needed bleachbit
-        doas pacman -S --noconfirm --needed code
+        #doas pacman -S --noconfirm --needed bluedevil
+        #doas pacman -S --noconfirm --needed kaccounts-providers
+        #doas pacman -S --noconfirm --needed kdenetwork-filesharing
+        #doas pacman -S --noconfirm --needed khotkeys
+        #doas pacman -S --noconfirm --needed kscreen
+        
+        ## 3-5-2.System
         doas pacman -S --noconfirm --needed cronie
-        doas pacman -S --noconfirm --needed dolphin
         doas pacman -S --noconfirm --needed exfatprogs
         doas pacman -S --noconfirm --needed fcitx5-im
         doas pacman -S --noconfirm --needed fcitx5-chewing
-        doas pacman -S --noconfirm --needed firefox
-        doas pacman -S --noconfirm --needed gimp
-        doas pacman -S --noconfirm --needed gnome-boxes
-        doas pacman -S --noconfirm --needed imagemagick
+        doas pacman -S --noconfirm --needed kdialog
+        doas pacman -S --noconfirm --needed konsole
+        doas pacman -S --noconfirm --needed ksystemlog
+        doas pacman -S --noconfirm --needed nftables
+        doas pacman -S --noconfirm --needed partitionmanager
+        doas pacman -S --noconfirm --needed samba
+        doas pacman -S --noconfirm --needed xdg-user-dirs
+        doas pacman -S --noconfirm --needed yakuake
+        doas pacman -S --noconfirm --needed zsh-theme-powerlevel10k
+        #doas pacman -S --noconfirm --needed cups
+        #doas pacman -S --noconfirm --needed firewalld
+        #doas pacman -S --noconfirm --needed ibus
+        #doas pacman -S --noconfirm --needed xdg-desktop-portal-kde ----> flatpak depend
+        
+        ## 3-5-3.Utillities
+        doas pacman -S --noconfirm --needed ark
+        doas pacman -S --noconfirm --needed code
+        doas pacman -S --noconfirm --needed dolphin
         doas pacman -S --noconfirm --needed kate
         doas pacman -S --noconfirm --needed kcalc
-        doas pacman -S --noconfirm --needed kdegraphics-thumbnailers
-        doas pacman -S --noconfirm --needed kdenlive
-        doas pacman -S --noconfirm --needed kdialog
         doas pacman -S --noconfirm --needed keepassxc
-        doas pacman -S --noconfirm --needed kolourpaint
         doas pacman -S --noconfirm --needed kompare
-        doas pacman -S --noconfirm --needed konsole
         doas pacman -S --noconfirm --needed krename
-        doas pacman -S --noconfirm --needed ksystemlog
+        doas pacman -S --noconfirm --needed p7zip
+        doas pacman -S --noconfirm --needed perl-rename
+        doas pacman -S --noconfirm --needed rclone
+        doas pacman -S --noconfirm --needed rsync
+        doas pacman -S --noconfirm --needed spectacle
+        doas pacman -S --noconfirm --needed unrar
+        #doas pacman -S --noconfirm --needed bleachbit
+        #doas pacman -S --noconfirm --needed crow-translate
+        #doas pacman -S --noconfirm --needed dolphin-plugins ----> netdrive and git control
+        #doas pacman -S --noconfirm --needed kfind
+        #doas pacman -S --noconfirm --needed kio-fuse
+        #doas pacman -S --noconfirm --needed ktimer
+        #doas pacman -S --noconfirm --needed unzip-natspec
+        
+        ## 3-5-4.Office applications
         doas pacman -S --noconfirm --needed libreoffice-still
         doas pacman -S --noconfirm --needed libreoffice-still-zh-tw
         doas pacman -S --noconfirm --needed markdownpart
+        doas pacman -S --noconfirm --needed okular
+        doas pacman -S --noconfirm --needed pcsclite
+        doas pacman -S --noconfirm --needed skanlite
+        
+        ## 3-5-5.Internet applications
+        doas pacman -S --noconfirm --needed baidupcs-go
+        doas pacman -S --noconfirm --needed opera
+        doas pacman -S --noconfirm --needed opera-ffmpeg-codecs
+        doas pacman -S --noconfirm --needed profile-sync-daemon
+        doas pacman -S --noconfirm --needed telegram-desktop
+        doas pacman -S --noconfirm --needed youtube-dl
+        #doas pacman -S --noconfirm --needed caprine  -------------> FB Messenger app
+        #doas pacman -S --noconfirm --needed clipgrab  ------------> Videosites downloader
+        #doas pacman -S --noconfirm --needed firefox
+        
+        ## 3-5-6.Media applications
+        
+        doas pacman -S --noconfirm --needed gimp
+        doas pacman -S --noconfirm --needed imagemagick
+        doas pacman -S --noconfirm --needed kdegraphics-thumbnailers
         doas pacman -S --noconfirm --needed mpg123
         doas pacman -S --noconfirm --needed mpv
-        doas pacman -S --noconfirm --needed nftables
-        doas pacman -S --noconfirm --needed okular
         doas pacman -S --noconfirm --needed opusfile
-        doas pacman -S --noconfirm --needed p7zip
-        doas pacman -S --noconfirm --needed partitionmanager
-        doas pacman -S --noconfirm --needed pcsclite
-        doas pacman -S --noconfirm --needed perl-rename
         doas pacman -S --noconfirm --needed pulseaudio-alsa
         doas pacman -S --noconfirm --needed qmmp
-        doas pacman -S --noconfirm --needed rclone
-        doas pacman -S --noconfirm --needed rsync
-        doas pacman -S --noconfirm --needed samba
-        doas pacman -S --noconfirm --needed skanlite
-        doas pacman -S --noconfirm --needed spectacle
-        doas pacman -S --noconfirm --needed telegram-desktop
-        doas pacman -S --noconfirm --needed unrar
-        doas pacman -S --noconfirm --needed xdg-user-dirs
-        doas pacman -S --noconfirm --needed yakuake
-        doas pacman -S --noconfirm --needed youtube-dl
-        doas pacman -S --noconfirm --needed zsh-theme-powerlevel10k
-
-        # 3-7.Install applications from archlinuxcn repo
-        # doas pacman -S --noconfirm megatools
-        # doas pacman -S --noconfirm ibus-libzhuyin
-        # doas pacman -S --noconfirm qbittorrent-enhanced-git
-        # doas pacman -S --noconfirm qview
-        # doas pacman -S --noconfirm rclone-browser
-        # doas pacman -S --noconfirm safeeyes
-        # doas pacman -S --noconfirm yay
-        # doas pacman -S --noconfirm ytop
-
-        ### doas pacman -S --noconfirm --needed bluedevil
-        ### doas pacman -S --noconfirm --needed caprine ---------- Facebook Messenger desktop app
-        ### doas pacman -S --noconfirm --needed clipgrab ---------- Video downloader
-        ### doas pacman -S --noconfirm --needed converseen ---------- Image converter
-        ### doas pacman -S --noconfirm --needed crow-translate
-        ### doas pacman -S --noconfirm --needed cups
-        ### doas pacman -S --noconfirm --needed dolphin-plugins
-        ### doas pacman -S --noconfirm --needed faad2 ---------- qmmp plugin
-        ### doas pacman -S --noconfirm --needed ffmpegthumbs
-        ### doas pacman -S --noconfirm --needed firewalld
-        ### doas pacman -S --noconfirm --needed ibus
-        ### doas pacman -S --noconfirm --needed k3b ---------- CD burning app
-        ### doas pacman -S --noconfirm --needed kaccounts-providers
-        ### doas pacman -S --noconfirm --needed kdenetwork-filesharing
-        ### doas pacman -S --noconfirm --needed khotkeys
-        ### doas pacman -S --noconfirm --needed kio-fuse
-        ### doas pacman -S --noconfirm --needed kfind
-        ### doas pacman -S --noconfirm --needed kscreen
-        ### doas pacman -S --noconfirm --needed ktimer
-        ### doas pacman -S --noconfirm --needed libmpcdec ---------- qmmp MusePack decoding library
-        ### doas pacman -S --noconfirm --needed libva-vdpau-driver (vlc)
-        ### doas pacman -S --noconfirm --needed opera
-        ### doas pacman -S --noconfirm --needed opera-ffmpeg-codecs
-        ### doas pacman -S --noconfirm --needed profile-sync-daemon
-        ### doas pacman -S --noconfirm --needed pulseaudio-bluetooth
-        ### doas pacman -S --noconfirm --needed qt5-imageformats
-        ### doas pacman -S --noconfirm --needed unzip-natspec
-        ### doas pacman -S --noconfirm --needed xdg-desktop-portal-kde (flatpak)
-        ### doas pacman -S virtualbox
-
-        # 3-8.Install applications from aur repo
-
-        # git clone https://aur.archlinux.org/trizen.git
-        # cd trizen
-        # makepkg -si
-
-        # yay -S anydesk-bin
-        # yay -S kde-servicemenus-rootactions
-        # yay -S jellyfin
-        # yay -S powerdevil-light
-        # yay -S qt-avif-image-plugin-git (qview)
-        # yay -S qt5-heif-git (qview)
-        # yay -S taipei-sans-tc
-        # yay -S ttf-meslo-nerd-font-powerlevel10k
-        # yay -S wine-x64
+        #doas pacman -S --noconfirm --needed converseen  ----------> Image converter app
+        #doas pacman -S --noconfirm --needed faad2  ---------------> qmmp AAC plugin
+        #doas pacman -S --noconfirm --needed k3b  -----------------> CD burning app
+        #doas pacman -S --noconfirm --needed kdenlive
+        #doas pacman -S --noconfirm --needed kid3
+        #doas pacman -S --noconfirm --needed kolourpaint
+        #doas pacman -S --noconfirm --needed libmpcdec  -----------> qmmp MusePack plugin
+        #doas pacman -S --noconfirm --needed libva-vdpau-driver ---> vlc plugin
+        #doas pacman -S --noconfirm --needed pulseaudio-bluetooth
+        #doas pacman -S --noconfirm --needed qt5-imageformats
         
-        ### yay -S ezusb (driver for EZ100PU)
-        ### yay -S ventoy-bin
-        ### yay -S ksnip
-        ### yay -S megacmd-bin
-        ### yay -S ms-office-online
-        ### yay -S stacer
-        ### yay -S tiny-media-manager
+        ## 3-5-7.Virtualization applications
+        doas pacman -S --noconfirm --needed qemu
+        doas pacman -S --noconfirm --needed edk2-ovmf
+        doas pacman -S --noconfirm --needed virt-manager
+        #doas pacman -S virtualbox
 
-        # doas sh ../../../Config/Sophos-Antivirus-free/install.sh
+        ## 3-6.Install applications from unofficial repo
+        # doas pacman -S --noconfirm --needed anydesk-bin
+        # doas pacman -S --noconfirm --needed kde-servicemenus-rootactions
+        # doas pacman -S --noconfirm --needed freetube
+        # doas pacman -S --noconfirm --needed megatools
+        # doas pacman -S --noconfirm --needed plasmafox
+        # doas pacman -S --noconfirm --needed qbittorrent-enhanced-git
+        # doas pacman -S --noconfirm --needed qt-avif-image-plugin-git ---> qview plugin
+        # doas pacman -S --noconfirm --needed qt5-heif-git ---------------> qview plugin
+        # doas pacman -S --noconfirm --needed qview
+        # doas pacman -S --noconfirm --needed rclone-browser
+        # doas pacman -S --noconfirm --needed safeeyes
+        # doas pacman -S --noconfirm --needed ttf-meslo-nerd-font-powerlevel10k
+        # doas pacman -S --noconfirm --needed wine-x64
+        # doas pacman -S --noconfirm --needed ytop
+        ### doas pacman -S --noconfirm --needed ezusb (driver for EZ100PU)
+        ### doas pacman -S --noconfirm --needed ibus-libzhuyin
+        ### doas pacman -S --noconfirm --needed jellyfin
+        ### doas pacman -S --noconfirm --needed jellyfin-server
+        ### doas pacman -S --noconfirm --needed jellyfin-web
+        ### doas pacman -S --noconfirm --needed ksnip
+        ### doas pacman -S --noconfirm --needed megacmd-bin
+        ### doas pacman -S --noconfirm --needed ms-office-online
+        ### doas pacman -S --noconfirm --needed powerdevil-light
+        ### doas pacman -S --noconfirm --needed tiny-media-manager
+        ### doas pacman -S --noconfirm --needed ventoy-bin
+
+        ### doas sh ./config/sophos-antivirus-free/install.sh
         # doas pacman -Rsn --noconfirm xdg-user-dirs
         doas systemctl start nftables.service
         doas systemctl enable nftables.service
         doas systemctl enable sddm
+        doas systemctl start libvirtd.service
+        doas systemctl enable libvirtd.service
     }
     
     echo
@@ -679,9 +672,21 @@ EOF
     esac
 
 
-###  ERROR: One or more PGP signatures could not be verified
-###  gpg --keyserver keys.gnupg.net --recv-keys <key>
 
-###  pacman
-###  ERROR: failed to update (unable to lock database)
-###  doas rm /var/lib/pacman/db.lck
+############## SCRIPT END ############################################################################
+
+
+###  Add Taiwan repo mirrors
+###     sed -i '11iServer = https://archlinux.ccns.ncku.edu.tw/archlinux/$repo/os/$arch' /etc/pacman.d/mirrorlist
+###     sed -i '12iServer = http://archlinux.cs.nctu.edu.tw/$repo/os/$arch' /etc/pacman.d/mirrorlist
+
+###  Install applications from AUR repo
+###     git clone https://aur.archlinux.org/trizen.git
+###     cd trizen
+###     makepkg -si
+
+###  pacman ERROR: One or more PGP signatures could not be verified
+###     gpg --keyserver keys.gnupg.net --recv-keys <key>
+
+###  pacman ERROR: failed to update (unable to lock database)
+###     doas rm /var/lib/pacman/db.lck
