@@ -1,6 +1,6 @@
 #######################################################################################################################
 ##                                                    Arch Linux                                                     ##
-##                                              INSTALLATION ASSISTANT                                       v1.0.0  ##
+##                                              INSTALLATION ASSISTANT                                       v1.7.0  ##
 #######################################################################################################################
 #
 # This file is a script for installing Arch Linux using the live system booted from an official image on my PC & NB. 
@@ -111,7 +111,8 @@ echo "
     echo "   2.Default B (Intel Laptop: 1*SSD)"
     echo "   3.Virtual Machine (UEFI: 1*SSD)"
     echo "   4.Virtual Machine (BIOS: 1*SSD)"
-    echo "   5.Manual partitioning"
+    echo "   5.AOMedia Video 1 Encoder Machine (Intel: 1*HDD)"
+    echo "   6.Manual partitioning"
     echo
     read -p ":: Select disks PARTITIONING configuration : " PARTITION
     case $PARTITION in
@@ -192,7 +193,33 @@ echo "
                 echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
                 echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log
             ;;
-        5)  parted
+        5)  echo
+            echo "   1.Format ROOT partition only"
+            echo "   2.Repartition and format all partitions"
+            echo
+            read -p ":: Select disks FORMATING configuration : " ACTION
+            echo
+            case $ACTION in
+                1)  mkfs.vfat /dev/sda1 &&
+                    mkfs.xfs /dev/sda2
+                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
+                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log
+                    ;;
+                2)  parted -s /dev/sda mklabel gpt &&
+                    parted -s /dev/sda mkpart "esp" fat32 '0%' 300MB &&
+                    parted -s /dev/sda set 1 esp on &&
+                    parted -s /dev/sda mkpart "root" xfs 300MiB '99%' &&
+                    parted -s /dev/sda mkpart "swap" linux-swap '99%' '100%' &&
+                    mkfs.vfat /dev/sda1 &&
+                    mkfs.xfs /dev/sda2 &&
+                    mkswap /dev/sda3 &&
+                    swapon /dev/sda3 &&
+                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
+                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log
+                    ;;
+            esac
+            ;;
+        6)  parted
             exit
             ;;
     esac
@@ -212,15 +239,21 @@ echo "
             echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log ||
             echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log
         ;;
+    3)  mount /dev/vda2 /mnt &&
+        mkdir -p /mnt/boot &&
+        mount /dev/vda1 /mnt/boot &&
+            echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log ||
+            echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log
+        ;;
     4)  mount /dev/vda2 /mnt &&
         mkdir -p /mnt/boot &&
         mount /dev/vda1 /mnt/boot &&
             echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log ||
             echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log
         ;;
-    5)  mount /dev/vda2 /mnt &&
+    5)  mount /dev/sda2 /mnt &&
         mkdir -p /mnt/boot &&
-        mount /dev/vda1 /mnt/boot &&
+        mount /dev/sda1 /mnt/boot &&
             echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log ||
             echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log
         ;;
@@ -557,6 +590,7 @@ EOF
         
         ## 3-5-3.Utillities
         doas pacman -S --noconfirm --needed ark
+        doas pacman -S --noconfirm --needed bottom
         doas pacman -S --noconfirm --needed code
         doas pacman -S --noconfirm --needed dolphin
         doas pacman -S --noconfirm --needed kate
@@ -598,7 +632,6 @@ EOF
         #doas pacman -S --noconfirm --needed firefox
         
         ## 3-5-6.Media applications
-        
         doas pacman -S --noconfirm --needed gimp
         doas pacman -S --noconfirm --needed imagemagick
         doas pacman -S --noconfirm --needed kdegraphics-thumbnailers
@@ -619,9 +652,9 @@ EOF
         #doas pacman -S --noconfirm --needed qt5-imageformats
         
         ## 3-5-7.Virtualization applications
-        doas pacman -S --noconfirm --needed qemu
-        doas pacman -S --noconfirm --needed edk2-ovmf
-        doas pacman -S --noconfirm --needed virt-manager
+        #doas pacman -S --noconfirm --needed qemu
+        #doas pacman -S --noconfirm --needed edk2-ovmf
+        #doas pacman -S --noconfirm --needed virt-manager
         #doas pacman -S virtualbox
 
         ## 3-6.Install applications from unofficial repo
@@ -638,7 +671,6 @@ EOF
         # doas pacman -S --noconfirm --needed safeeyes
         # doas pacman -S --noconfirm --needed ttf-meslo-nerd-font-powerlevel10k
         # doas pacman -S --noconfirm --needed wine-x64
-        # doas pacman -S --noconfirm --needed ytop
         ### doas pacman -S --noconfirm --needed ezusb (driver for EZ100PU)
         ### doas pacman -S --noconfirm --needed ibus-libzhuyin
         ### doas pacman -S --noconfirm --needed jellyfin
@@ -651,13 +683,22 @@ EOF
         ### doas pacman -S --noconfirm --needed tiny-media-manager
         ### doas pacman -S --noconfirm --needed ventoy-bin
 
+        ## 3-7-1.Encoder System
+        # doas pacman -S --noconfirm --needed mesa
+        ### doas pacman -S --noconfirm --needed vulkan-intel xf86-video-intel lib32-mesa
+        # doas pacman -S --noconfirm --needed xfce4 xorg
+        
+        ## 3-7-2.AOMedia Video 1 applications
+        # doas pacman -S --noconfirm --needed av1an mkvtoolnix-cli vapoursynth-plugin-lsmashsource
+        # yay -S aom-psy-git aom-av1-psy-git
+
         ### doas sh ./config/sophos-antivirus-free/install.sh
         # doas pacman -Rsn --noconfirm xdg-user-dirs
         doas systemctl start nftables.service
         doas systemctl enable nftables.service
         doas systemctl enable sddm
-        doas systemctl start libvirtd.service
-        doas systemctl enable libvirtd.service
+        # doas systemctl start libvirtd.service
+        # doas systemctl enable libvirtd.service
     }
     
     echo
