@@ -1,6 +1,6 @@
 #######################################################################################################################
 ##                                                    Arch Linux                                                     ##
-##                                              INSTALLATION ASSISTANT                                       v1.7.0  ##
+##                                              INSTALLATION ASSISTANT                                       v1.0.0  ##
 #######################################################################################################################
 #
 # This file is a script for installing Arch Linux using the live system booted from an official image on my PC & NB. 
@@ -259,20 +259,23 @@ echo "
         ;;
     esac
 
-# 1-6.Install linux kernel & base packages
+# 1-6.Get the mirrorlist directly from Pacman Mirrorlist Generator:
+    curl -o /etc/pacman.d/mirrorlist https://archlinux.org/mirrorlist/?country=TW&protocol=http&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on
+
+# 1-7.Install linux kernel & base packages
     echo
     pacstrap /mnt base linux linux-firmware &&
         echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-7.Install linux kernel & base packages" | tee -a ./log ||
         echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-7.Install linux kernel & base packages" | tee -a ./log
 
-# 1-7.Generate fstab
+# 1-8.Generate fstab
     echo
     genfstab -U /mnt >> /mnt/etc/fstab &&
     cat /mnt/etc/fstab &&
         echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-8.Generate fstab" | tee -a ./log ||
         echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-8.Generate fstab" | tee -a ./log
 
-# 1-8.Change root into the new system
+# 1-9.Change root into the new system
     echo
     cat ./log
     echo
@@ -290,14 +293,23 @@ echo "
                     echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-9.Change root into the new system" | tee -a ./log
                     
                     # 2-1.Install essential packages
-                        if grep -q "AMD" "/proc/cpuinfo"; then
-                            pacman -S --noconfirm amd-ucode opendoas nano git xfsprogs zsh
-                        else
-                            pacman -S --noconfirm intel-ucode opendoas nano git zsh iwd
-                        fi
+                        case $PARTITION in
+                        1)  pacman -S --noconfirm amd-ucode opendoas nano git xfsprogs zsh
+                            ;;
+                        2)  pacman -S --noconfirm intel-ucode opendoas nano git zsh iwd
+                            ;;
+                        3|4)  if grep -q "AMD" "/proc/cpuinfo"; then
+                                pacman -S --noconfirm amd-ucode opendoas nano git xfsprogs zsh
+                            else
+                                pacman -S --noconfirm intel-ucode opendoas nano git zsh iwd
+                            fi
+                            ;;
+                        5)  pacman -S --noconfirm intel-ucode opendoas nano
+                            ;;
+                        esac
                             echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-1.Install essential packages" | tee -a ./log ||
                             echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-1.Install essential packages" | tee -a ./log
-
+                        
                     # 2-2.Set the time zone
                         echo
                         ln -sf /usr/share/zoneinfo/Asia/Taipei /etc/localtime &&
@@ -323,7 +335,7 @@ echo "
 
                     # 2-4.Network Configuration
                         echo
-                        read -p ":: Input your hostname : " hostname
+                        read -p ":: Input your hostname : " hostname &&
                         echo "$hostname" >> /etc/hostname &&
                         echo "127.0.0.1   localhost" >> /etc/hosts &&
                         echo "::1         localhost" >> /etc/hosts &&
@@ -340,8 +352,8 @@ echo "
 
                     # 2-6.Add users account
                         echo
-                        read -p ":: Add your user account : " username
-                        echo $username >> username.tmp
+                        read -p ":: Add your user account : " username &&
+                        echo $username >> username.tmp &&
                         useradd -m $username -G wheel -s /bin/zsh &&
                         passwd $username || (echo "Pelease input again:"; echo; passwd $username) &&
                         echo "permit persist :wheel" >> /etc/doas.conf
@@ -381,9 +393,9 @@ echo "
                             echo "Target = systemd"                    >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
                             echo ""                                    >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
                             echo "[Action]"                            >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
-                            echo "Description = Updating systemd-boot" >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                            echo "Description = Gracefully upgrading systemd-boot..." >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
                             echo "When = PostTransaction"              >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
-                            echo "Exec = /usr/bin/bootctl update"      >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                            echo "Exec = /usr/bin/systemctl restart systemd-boot-update.service" >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
 
                             bootctl --path=/boot update &&
                                 echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-7.systemd-boot configuration" | tee -a ./log ||
