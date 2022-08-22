@@ -233,35 +233,24 @@ echo "
             echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log ||
             echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log
         ;;
-    2)  mount /dev/sda2 /mnt &&
+    2|5)  mount /dev/sda2 /mnt &&
         mkdir -p /mnt/boot &&
         mount /dev/sda1 /mnt/boot &&
             echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log ||
             echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log
         ;;
-    3)  mount /dev/vda2 /mnt &&
+    3|4)  mount /dev/vda2 /mnt &&
         mkdir -p /mnt/boot &&
         mount /dev/vda1 /mnt/boot &&
-            echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log ||
-            echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log
-        ;;
-    4)  mount /dev/vda2 /mnt &&
-        mkdir -p /mnt/boot &&
-        mount /dev/vda1 /mnt/boot &&
-            echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log ||
-            echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log
-        ;;
-    5)  mount /dev/sda2 /mnt &&
-        mkdir -p /mnt/boot &&
-        mount /dev/sda1 /mnt/boot &&
             echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log ||
             echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log
         ;;
     esac
+    echo $PARTITION > /mnt/tmp_PARTITION
 
 # 1-6.Get the mirrorlist directly from Pacman Mirrorlist Generator:
-    curl -o /etc/pacman.d/mirrorlist https://archlinux.org/mirrorlist/?country=TW&protocol=http&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on
-
+    curl -s "/etc/pacman.d/mirrorlist https://archlinux.org/mirrorlist/?country=TW&protocol=http&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on" | sed -e 's/^#Server/Server/' -e '/^#/d' > /etc/pacman.d/mirrorlist
+    cp -f /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist
 # 1-7.Install linux kernel & base packages
     echo
     pacstrap /mnt base linux linux-firmware &&
@@ -293,6 +282,8 @@ echo "
                     echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-9.Change root into the new system" | tee -a ./log
                     
                     # 2-1.Install essential packages
+                        PARTITION="$(cat tmp_PARTITION)"
+                        
                         case $PARTITION in
                         1)  pacman -S --noconfirm amd-ucode opendoas nano git xfsprogs zsh
                             ;;
@@ -307,6 +298,8 @@ echo "
                         5)  pacman -S --noconfirm intel-ucode opendoas nano
                             ;;
                         esac
+
+                        rm tmp_PARTITION
                             echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-1.Install essential packages" | tee -a ./log ||
                             echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-1.Install essential packages" | tee -a ./log
                         
@@ -354,7 +347,7 @@ echo "
                         echo
                         read -p ":: Add your user account : " username &&
                         echo $username >> username.tmp &&
-                        useradd -m $username -G wheel -s /bin/zsh &&
+                        useradd -m $username -G wheel -s /bin/bash &&
                         passwd $username || (echo "Pelease input again:"; echo; passwd $username) &&
                         echo "permit persist :wheel" >> /etc/doas.conf
                             echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-6.Add users account" | tee -a ./log ||
@@ -534,7 +527,7 @@ EOF
         echo "( $(tput setaf 2)!$(tput sgr 0) ) 3-3.Automount disk partitions" | tee -a ./log ||
         echo "( $(tput setaf 1)X$(tput sgr 0) ) 3-3.Automount disk partitions" | tee -a ./log 
         
-        # 3-4.Add archlinuxcn repo
+        # 3-5.Add archlinuxcn repo
         # doas sh -c "echo '' >> /etc/pacman.conf"
         # doas sh -c "echo '[archlinuxcn]' >> /etc/pacman.conf"
         # doas sh -c "echo 'Server = https://repo.archlinuxcn.org/\$arch' >> /etc/pacman.conf"
@@ -553,9 +546,9 @@ EOF
         #         *) exit ;;
         #     esac
 
-        # 3-5.Install applications from official repo
+        # 3-6.Install applications from official repo
         
-        ## 3-5-1.GPU driver, font and plasma desktop
+        ## 3-6-1.GPU driver, font and plasma desktop
         doas pacman -S --noconfirm --needed noto-fonts
         doas pacman -S --noconfirm --needed noto-fonts-cjk
         doas pacman -S --noconfirm --needed xorg-server
@@ -581,7 +574,7 @@ EOF
         #doas pacman -S --noconfirm --needed khotkeys
         #doas pacman -S --noconfirm --needed kscreen
         
-        ## 3-5-2.System
+        ## 3-6-2.System
         doas pacman -S --noconfirm --needed cronie
         doas pacman -S --noconfirm --needed exfatprogs
         doas pacman -S --noconfirm --needed fcitx5-im
@@ -600,7 +593,7 @@ EOF
         #doas pacman -S --noconfirm --needed ibus
         #doas pacman -S --noconfirm --needed xdg-desktop-portal-kde ----> flatpak depend
         
-        ## 3-5-3.Utillities
+        ## 3-6-3.Utillities
         doas pacman -S --noconfirm --needed ark
         doas pacman -S --noconfirm --needed bottom
         doas pacman -S --noconfirm --needed code
@@ -624,7 +617,7 @@ EOF
         #doas pacman -S --noconfirm --needed ktimer
         #doas pacman -S --noconfirm --needed unzip-natspec
         
-        ## 3-5-4.Office applications
+        ## 3-6-4.Office applications
         doas pacman -S --noconfirm --needed libreoffice-still
         doas pacman -S --noconfirm --needed libreoffice-still-zh-tw
         doas pacman -S --noconfirm --needed markdownpart
@@ -632,7 +625,7 @@ EOF
         doas pacman -S --noconfirm --needed pcsclite
         doas pacman -S --noconfirm --needed skanlite
         
-        ## 3-5-5.Internet applications
+        ## 3-6-5.Internet applications
         doas pacman -S --noconfirm --needed baidupcs-go
         doas pacman -S --noconfirm --needed opera
         doas pacman -S --noconfirm --needed opera-ffmpeg-codecs
@@ -643,7 +636,7 @@ EOF
         #doas pacman -S --noconfirm --needed clipgrab  ------------> Videosites downloader
         #doas pacman -S --noconfirm --needed firefox
         
-        ## 3-5-6.Media applications
+        ## 3-6-6.Media applications
         doas pacman -S --noconfirm --needed gimp
         doas pacman -S --noconfirm --needed imagemagick
         doas pacman -S --noconfirm --needed kdegraphics-thumbnailers
@@ -663,13 +656,13 @@ EOF
         #doas pacman -S --noconfirm --needed pulseaudio-bluetooth
         #doas pacman -S --noconfirm --needed qt5-imageformats
         
-        ## 3-5-7.Virtualization applications
+        ## 3-6-7.Virtualization applications
         #doas pacman -S --noconfirm --needed qemu
         #doas pacman -S --noconfirm --needed edk2-ovmf
         #doas pacman -S --noconfirm --needed virt-manager
         #doas pacman -S virtualbox
 
-        ## 3-6.Install applications from unofficial repo
+        ## 3-7.Install applications from unofficial repo
         # doas pacman -S --noconfirm --needed anydesk-bin
         # doas pacman -S --noconfirm --needed kde-servicemenus-rootactions
         # doas pacman -S --noconfirm --needed freetube
