@@ -249,7 +249,7 @@ echo "
     echo $PARTITION > /mnt/tmp_PARTITION
 
 # 1-6.Get the mirrorlist directly from Pacman Mirrorlist Generator:
-    curl -s "/etc/pacman.d/mirrorlist https://archlinux.org/mirrorlist/?country=TW&protocol=http&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on" | sed -e 's/^#Server/Server/' -e '/^#/d' > /etc/pacman.d/mirrorlist
+    curl -s "https://archlinux.org/mirrorlist/?country=TW&protocol=http&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on" | sed -e 's/^#Server/Server/' -e '/^#/d' > /etc/pacman.d/mirrorlist
     cp -f /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist
 # 1-7.Install linux kernel & base packages
     echo
@@ -356,7 +356,7 @@ echo "
                     # 2-7.systemd-boot Configuration
                         echo
                         if find /dev/sda1 >> /dev/null 2>&1; then
-                            bootctl --path=/boot install
+                            bootctl install
                             PARTUUID=$(blkid -o export /dev/nvme0n1p2 | grep PARTUUID) ||
                             PARTUUID=$(blkid -o export /dev/sda2 | grep PARTUUID)
                             
@@ -390,7 +390,26 @@ echo "
                             echo "When = PostTransaction"              >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
                             echo "Exec = /usr/bin/systemctl restart systemd-boot-update.service" >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
 
-                            bootctl --path=/boot update &&
+                            # Edit /etc/pacman.d/hooks/99-secureboot.hook for Secure Boot
+                            echo "[Trigger]"                           >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            echo "Operation = Install"                 >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            echo "Operation = Upgrade"                 >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            echo "Type = Package"                      >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            echo "Target = linux"                      >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            echo "linux-lts"                           >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            echo "linux-clear"                         >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            echo "linux-zen"                           >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            echo "Target = systemd"                    >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            echo ""                                    >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            echo "[Action]"                            >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            echo "Description = Signing Kernel for Secure Boot" >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            echo "When = PostTransaction"              >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            echo "Exec = /usr/bin/find /boot -type f ( -name vmlinuz-* -o -name systemd* ) -exec /usr/bin/sh -c 'if ! /usr/bin/sbverify --list {} 2>/dev/null | /usr/bin/grep -q "signature certificates"; then /usr/bin/sbsign --key db.key --cert db.crt --output "$1" "$1"; fi' _ {} ;" >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            echo "Depends = sbsigntools"               >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            echo "Depends = findutils"                 >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            echo "Depends = grep"                      >> /etc/pacman.d/hooks/99-secureboot.hook &&
+
+                            bootctl update &&
                                 echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-7.systemd-boot configuration" | tee -a ./log ||
                                 echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-7.systemd-boot configuration" | tee -a ./log
                         else
@@ -692,6 +711,7 @@ EOF
         # doas pacman -S --noconfirm --needed mesa
         ### doas pacman -S --noconfirm --needed vulkan-intel xf86-video-intel lib32-mesa
         # doas pacman -S --noconfirm --needed xfce4 xorg
+        # doas pacman -S --noconfirm --needed usb_modeswitch
         
         ## 3-7-2.AOMedia Video 1 applications
         # doas pacman -S --noconfirm --needed av1an mkvtoolnix-cli vapoursynth-plugin-lsmashsource
