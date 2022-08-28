@@ -282,8 +282,8 @@ echo "
                     echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-9.Change root into the new system" | tee -a ./log
                     
                     # 2-1.Install essential packages
+                        pacman-mirrors --fasttrack 10 && pacman -Syyu &&
                         PARTITION="$(cat tmp_PARTITION)"
-                        
                         case $PARTITION in
                         1)  pacman -S --noconfirm amd-ucode opendoas nano git xfsprogs zsh
                             ;;
@@ -391,23 +391,20 @@ echo "
                             echo "Exec = /usr/bin/systemctl restart systemd-boot-update.service" >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
 
                             # Edit /etc/pacman.d/hooks/99-secureboot.hook for Secure Boot
-                            echo "[Trigger]"                           >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            echo "Operation = Install"                 >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            echo "Operation = Upgrade"                 >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            echo "Type = Package"                      >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            echo "Target = linux"                      >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            echo "linux-lts"                           >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            echo "linux-clear"                         >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            echo "linux-zen"                           >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            echo "Target = systemd"                    >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            echo ""                                    >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            echo "[Action]"                            >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            echo "Description = Signing Kernel for Secure Boot" >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            echo "When = PostTransaction"              >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            echo "Exec = /usr/bin/find /boot -type f ( -name vmlinuz-* -o -name systemd* ) -exec /usr/bin/sh -c 'if ! /usr/bin/sbverify --list {} 2>/dev/null | /usr/bin/grep -q "signature certificates"; then /usr/bin/sbsign --key db.key --cert db.crt --output "$1" "$1"; fi' _ {} ;" >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            echo "Depends = sbsigntools"               >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            echo "Depends = findutils"                 >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            echo "Depends = grep"                      >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            #echo "[Trigger]"                           >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            #echo "Operation = Install"                 >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            #echo "Operation = Upgrade"                 >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            #echo "Type = Package"                      >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            #echo "Target = linux"                      >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            #echo "Target = systemd"                    >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            #echo ""                                    >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            #echo "[Action]"                            >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            #echo "Description = Signing Kernel for Secure Boot" >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            #echo "When = PostTransaction"              >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            #echo "Exec = /usr/bin/find /boot -type f ( -name vmlinuz-* -o -name systemd* ) -exec /usr/bin/sh -c 'if ! /usr/bin/sbverify --list {} 2>/dev/null | /usr/bin/grep -q "signature certificates"; then /usr/bin/sbsign --key db.key --cert db.crt --output "$1" "$1"; fi' _ {} ;" >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            #echo "Depends = sbsigntools"               >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            #echo "Depends = findutils"                 >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                            #echo "Depends = grep"                      >> /etc/pacman.d/hooks/99-secureboot.hook &&
 
                             bootctl update &&
                                 echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-7.systemd-boot configuration" | tee -a ./log ||
@@ -433,6 +430,9 @@ echo "
                                     echo ""            >> /etc/systemd/network/20-wired.network &&
                                     echo "[Network]"   >> /etc/systemd/network/20-wired.network &&
                                     echo "DHCP=true"   >> /etc/systemd/network/20-wired.network &&
+
+                                    echo "# Execute pairing program when appropriate"   >>  /etc/udev/rules.d/90-android-tethering.rules &&
+                                    echo 'ACTION=="add|remove", SUBSYSTEM=="net", ATTR{idVendor}=="18d1" ENV{ID_USB_DRIVER}=="rndis_host", SYMLINK+="android"' >> /etc/udev/rules.d/90-android-tethering.rules &&
                                         echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-8.systemd-networkd Configuration" | tee -a ./log ||
                                         echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-8.systemd-networkd Configuration" | tee -a ./log
                                     ;;
@@ -466,6 +466,11 @@ echo "
                                 echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-9.Wireless network configuration (ignored)" | tee -a ./log
                         fi
 
+                    # 2-10.Disable pc speaker
+                        echo
+                        echo "blacklist pcspkr" >> /etc/modprobe.d/nobeep.conf &&
+                            echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-10.Disable pc speaker" | tee -a ./log ||
+                            echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-10.Disable pc speaker" | tee -a ./log
                     exit
 EOF
                   arch-chroot /mnt /bin/bash installation-step2.sh
@@ -714,8 +719,9 @@ EOF
         # doas pacman -S --noconfirm --needed usb_modeswitch
         
         ## 3-7-2.AOMedia Video 1 applications
-        # doas pacman -S --noconfirm --needed av1an mkvtoolnix-cli vapoursynth-plugin-lsmashsource
+        # doas pacman -S --noconfirm --needed fakeroot gcc pkg-config
         # yay -S aom-psy-git aom-av1-psy-git
+        # doas pacman -S --noconfirm --needed av1an mkvtoolnix-cli vapoursynth-plugin-lsmashsource cpupower
 
         ### doas sh ./config/sophos-antivirus-free/install.sh
         # doas pacman -Rsn --noconfirm xdg-user-dirs
