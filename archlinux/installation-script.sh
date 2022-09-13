@@ -609,6 +609,7 @@ EOF
         doas pacman -S --noconfirm --needed nftables
         doas pacman -S --noconfirm --needed partitionmanager
         doas pacman -S --noconfirm --needed samba
+        doas pacman -S --noconfirm --needed usb_modeswitch
         doas pacman -S --noconfirm --needed xdg-user-dirs
         doas pacman -S --noconfirm --needed yakuake
         doas pacman -S --noconfirm --needed zsh-theme-powerlevel10k
@@ -712,16 +713,25 @@ EOF
         ### doas pacman -S --noconfirm --needed tiny-media-manager
         ### doas pacman -S --noconfirm --needed ventoy-bin
 
-        ## 3-7-1.Encoder System
-        # doas pacman -S --noconfirm --needed mesa
-        ### doas pacman -S --noconfirm --needed vulkan-intel xf86-video-intel lib32-mesa
-        # doas pacman -S --noconfirm --needed xfce4 xorg
-        # doas pacman -S --noconfirm --needed usb_modeswitch
-        
         ## 3-7-2.AOMedia Video 1 applications
         # doas pacman -S --noconfirm --needed fakeroot gcc pkg-config
-        # yay -S aom-psy-git aom-av1-psy-git
-        # doas pacman -S --noconfirm --needed av1an mkvtoolnix-cli vapoursynth-plugin-lsmashsource cpupower
+        # yay -S aom-psy-git / aom-av1-psy-git
+        # doas pacman -S --noconfirm --needed mkvtoolnix-cli vapoursynth-plugin-lsmashsource cpupower
+        # yay -S av1an-git
+        # cat << EOF | doas tee /etc/systemd/system/cpupower.service
+        # [Unit]
+        # Description=CPU performance
+        # [Service]
+        # Type=oneshot
+        # ExecStrat=/usr/bin/cpupower -c all frequency-set -g performance
+        # ExecStrat=/usr/bin/cpupower -c all frequency-set -u 3800000
+        # [Install]
+        # WantedBy=Multi-user.target
+        # EOF
+
+        # doas systemctl start cpupower.service
+        # doas systemctl enable cpupower.service
+        # doas cpupower frequency-set -u 3800000
 
         ### doas sh ./config/sophos-antivirus-free/install.sh
         # doas pacman -Rsn --noconfirm xdg-user-dirs
