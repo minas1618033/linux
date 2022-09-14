@@ -246,11 +246,13 @@ echo "
             echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Mount the file systems" | tee -a ./log
         ;;
     esac
-    echo $PARTITION > /mnt/tmp_PARTITION
+    echo $PARTITION >> /mnt/tmp_PARTITION
 
 # 1-6.Get the mirrorlist directly from Pacman Mirrorlist Generator:
-    curl -s "https://archlinux.org/mirrorlist/?country=TW&protocol=http&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on" | sed -e 's/^#Server/Server/' -e '/^#/d' > /etc/pacman.d/mirrorlist
-    cp -f /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist
+    curl -s "https://archlinux.org/mirrorlist/?country=TW&protocol=http&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on" | sed -e 's/^#Server/Server/' -e '/^#/d' >> /etc/pacman.d/mirrorlist &&
+    cp -f /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist &&
+        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-7.Install linux kernel & base packages" | tee -a ./log ||
+        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-7.Install linux kernel & base packages" | tee -a ./log
 # 1-7.Install linux kernel & base packages
     echo
     pacstrap /mnt base linux linux-firmware &&
@@ -745,7 +747,7 @@ EOF
     echo
     read -n1 -p ":: Reboot now? " ACTION
     case $ACTION in
-        [yY]) username=$(cat /mnt/username.tmp)
+        [yY]) username="$(cat /mnt/username.tmp)"
               type configuration >> /mnt/home/$username/configuration.sh
               rm /mnt/username.tmp
               mv installation.sh /mnt/home/$username/
