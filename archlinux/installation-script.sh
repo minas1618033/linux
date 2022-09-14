@@ -1,6 +1,6 @@
 #######################################################################################################################
 ##                                                    Arch Linux                                                     ##
-##                                              INSTALLATION ASSISTANT                                       v1.0.0  ##
+##                                              INSTALLATION ASSISTANT                                       v1.7.0  ##
 #######################################################################################################################
 #
 # This file is a script for installing Arch Linux using the live system booted from an official image on my PC & NB. 
@@ -83,9 +83,9 @@ find ./log >> /dev/null 2>&1 && rm -i ./log
 echo "
              $(tput setab 6)      Arch Linux      $(tput sgr 0)
              $(tput setaf 6)INSTALLATION ASSISTANT$(tput setaf 242)
-                                           1.0.0
+                                           1.7.0
 ------------------------------------------------
-      Copyright (c) 2020-2021 Zelko Rocha$(tput sgr 0)
+      Copyright (c) 2020-2022 Zelko Rocha$(tput sgr 0)
 "
 # 1-1.Connected to the Internet
     ping -c 2 www.google.com > /dev/null &&
@@ -251,8 +251,9 @@ echo "
 # 1-6.Get the mirrorlist directly from Pacman Mirrorlist Generator:
     curl -s "https://archlinux.org/mirrorlist/?country=TW&protocol=http&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on" | sed -e 's/^#Server/Server/' -e '/^#/d' >> /etc/pacman.d/mirrorlist &&
     cp -f /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist &&
-        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-7.Install linux kernel & base packages" | tee -a ./log ||
-        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-7.Install linux kernel & base packages" | tee -a ./log
+        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-6.Get the mirrorlist directly from Pacman Mirrorlist Generator" | tee -a ./log ||
+        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-6.Get the mirrorlist directly from Pacman Mirrorlist Generator" | tee -a ./log
+
 # 1-7.Install linux kernel & base packages
     echo
     pacstrap /mnt base linux linux-firmware &&
@@ -284,7 +285,7 @@ echo "
                     echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-9.Change root into the new system" | tee -a ./log
                     
                     # 2-1.Install essential packages
-                        pacman-mirrors --fasttrack 10 && pacman -Syyu &&
+                        pacman -Syyu &&
                         PARTITION="$(cat tmp_PARTITION)"
                         case $PARTITION in
                         1)  pacman -S --noconfirm amd-ucode opendoas nano git xfsprogs zsh
@@ -299,9 +300,8 @@ echo "
                             ;;
                         5)  pacman -S --noconfirm intel-ucode opendoas nano
                             ;;
-                        esac
-
-                        rm tmp_PARTITION
+                        esac &&
+                        rm tmp_PARTITION &&
                             echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-1.Install essential packages" | tee -a ./log ||
                             echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-1.Install essential packages" | tee -a ./log
                         
