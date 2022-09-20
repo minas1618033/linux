@@ -250,7 +250,7 @@ echo "
 
 # 1-6.Get the mirrorlist directly from Pacman Mirrorlist Generator:
     curl -s "https://archlinux.org/mirrorlist/?country=TW&protocol=http&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on" | sed -e 's/^#Server/Server/' -e '/^#/d' >> /etc/pacman.d/mirrorlist &&
-    cp -f /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist &&
+    cp -f /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/ &&
         echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-6.Get the mirrorlist directly from Pacman Mirrorlist Generator" | tee -a ./log ||
         echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-6.Get the mirrorlist directly from Pacman Mirrorlist Generator" | tee -a ./log
 
@@ -298,10 +298,13 @@ echo "
                                 pacman -S --noconfirm intel-ucode opendoas nano git zsh iwd
                             fi
                             ;;
-                        5)  pacman -S --noconfirm intel-ucode opendoas nano
+                        5)  if grep -q "AMD" "/proc/cpuinfo"; then
+                                pacman -S --noconfirm amd-ucode opendoas nano git
+                            else
+                                pacman -S --noconfirm intel-ucode opendoas nano git
+                            fi
                             ;;
                         esac &&
-                        rm tmp_PARTITION &&
                             echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-1.Install essential packages" | tee -a ./log ||
                             echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-1.Install essential packages" | tee -a ./log
                         
@@ -341,7 +344,7 @@ echo "
                     # 2-5.Set the root password
                         echo
                         echo ":: Set ROOT account password" &&
-                        passwd || (echo "Pelease input again:"; echo; passwd) &&
+                        passwd || (echo "Something is wrong, Pelease input again:"; echo; passwd) &&
                             echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-5.Set the root password" | tee -a ./log ||
                             echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-5.Set the root password" | tee -a ./log
 
@@ -350,7 +353,7 @@ echo "
                         read -p ":: Add your user account : " username &&
                         echo $username >> username.tmp &&
                         useradd -m $username -G wheel -s /bin/bash &&
-                        passwd $username || (echo "Pelease input again:"; echo; passwd $username) &&
+                        passwd $username || (echo "Something is wrong, Pelease input again:"; echo; passwd $username) &&
                         echo "permit persist :wheel" >> /etc/doas.conf
                             echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-6.Add users account" | tee -a ./log ||
                             echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-6.Add users account" | tee -a ./log
@@ -541,7 +544,7 @@ EOF
         echo "( $(tput setaf 2)O$(tput sgr 0) ) 3-2.Enable SSD Trim" | tee -a ./log ||
         echo "( $(tput setaf 1)X$(tput sgr 0) ) 3-2.Enable SSD Trim" | tee -a ./log 
 
-        # 3-3.Automount disk partitions ('ls -lh /dev/disk/by-uuid' or 'lsblk -f' to find UUID) ---------------------------------------------------------
+        # 3-3.Automount other disk partitions ('ls -lh /dev/disk/by-uuid' or 'lsblk -f' to find UUID) ---------------------------------------------------------
         #    # /dev/nvme0n1p1
         #    UUID={UUID} /boot/efi vfat rw,noatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 2
         #    # /dev/nvme0n1p2
@@ -611,7 +614,6 @@ EOF
         doas pacman -S --noconfirm --needed nftables
         doas pacman -S --noconfirm --needed partitionmanager
         doas pacman -S --noconfirm --needed samba
-        doas pacman -S --noconfirm --needed usb_modeswitch
         doas pacman -S --noconfirm --needed xdg-user-dirs
         doas pacman -S --noconfirm --needed yakuake
         doas pacman -S --noconfirm --needed zsh-theme-powerlevel10k
@@ -717,7 +719,7 @@ EOF
 
         ## 3-7-2.AOMedia Video 1 applications
         # doas pacman -S --noconfirm --needed fakeroot gcc pkg-config
-        # yay -S aom-psy-git / aom-av1-psy-git
+        # yay -S aom-av1-psy-git
         # doas pacman -S --noconfirm --needed mkvtoolnix-cli vapoursynth-plugin-lsmashsource cpupower
         # yay -S av1an-git
         # cat << EOF | doas tee /etc/systemd/system/cpupower.service
@@ -774,3 +776,12 @@ EOF
 
 ###  pacman ERROR: failed to update (unable to lock database)
 ###     doas rm /var/lib/pacman/db.lck
+
+###  Increase limits the number of file descriptors any process owned by the specified domain can have open at any one time.
+###  Edit /etc/systemd/user.conf
+###  Edit /etc/systemd/system.conf
+###  DefaultLimitNOFILE=8192:524288
+###
+###  Edit /etc/security/limits.conf
+###  * hard nofile 65535
+###  * soft nofile 65535
