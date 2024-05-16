@@ -1,6 +1,6 @@
 #######################################################################################################################
 ##                                                    Arch Linux                                                     ##
-##                                              INSTALLATION ASSISTANT                                       v1.7.1  ##
+##                                              INSTALLATION ASSISTANT                                       v1.7.2  ##
 #######################################################################################################################
 #
 # This file is a script for installing Arch Linux using the live system booted from an official image on my PC & NB. 
@@ -85,7 +85,7 @@ echo "
              $(tput setaf 6)INSTALLATION ASSISTANT$(tput setaf 242)
                                            1.7.1
 ------------------------------------------------
-      Copyright (c) 2020-2023 Zelko Rocha$(tput sgr 0)
+      Copyright (c) 2020-2024 Zelko Rocha$(tput sgr 0)
 "
 # 1-1.Connected to the Internet
     ping -c 2 www.google.com > /dev/null &&
@@ -99,19 +99,27 @@ echo "
         echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-2.Update the system clock" | tee -a ./log ||
         echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-2.Update the system clock" | tee -a ./log
 
-# 1-3.Identify UEFI/BIOS
+# 1-3.Identify Secure Boot status
+    echo
+    bootctl status &&
+    echo "Systemd-boot ENABLE Secure Boot as default, you can change setting later"
+    sleep 5s &&
+        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-3.The Secure Boot status checked" | tee -a ./log ||
+        echo "( $(tput setaf 2)!$(tput sgr 0) ) 1-3.The Secure Boot status checked" | tee -a ./log
+
+# 1-4.Identify UEFI/BIOS
     echo
     find /sys/firmware/efi >> /dev/null 2>&1 &&
-        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-3.The computer support UEFI" | tee -a ./log ||
-        echo "( $(tput setaf 2)!$(tput sgr 0) ) 1-3.The computer support BIOS only" | tee -a ./log
-    
-# 1-4.Partition the disks
+        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.The computer support UEFI" | tee -a ./log ||
+        echo "( $(tput setaf 2)!$(tput sgr 0) ) 1-4.The computer support BIOS only" | tee -a ./log
+
+# 1-5.Partition the disks
     echo
     echo "   1.Default A (AMD Desktop: 1*NVME + 2*HDD)"
     echo "   2.Default B (Intel Laptop: 1*SSD)"
     echo "   3.Virtual Machine (UEFI: 1*SSD)"
     echo "   4.Virtual Machine (BIOS: 1*SSD)"
-    echo "   5.AOMedia Video 1 Encoder Machine (Intel: 1*HDD)"
+    echo "   5.Video Encoder Machine (Intel Desktop: 1*HDD)"
     echo "   6.Manual partitioning"
     echo
     read -p ":: Select disks PARTITIONING configuration : " PARTITION
@@ -124,17 +132,17 @@ echo "
             read -p ":: Select disks FORMATING configuration : " ACTION
             echo
             case $ACTION in
-                1)  mkfs.vfat /dev/nvme0n1p1 &&
-                    mkfs.xfs /dev/nvme0n1p2 &&
-                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
-                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log || break
+                1)  mkfs.vfat -f /dev/nvme0n1p1 &&
+                    mkfs.xfs -f /dev/nvme0n1p2 &&
+                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Partition & foemat the disks" | tee -a ./log ||
+                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Partition & foemat the disks" | tee -a ./log || break
                     ;;
-                2)  mkfs.vfat /dev/nvme0n1p1 &&
-                    mkfs.xfs /dev/nvme0n1p2 &&
-                    mkfs.xfs /dev/sda1 &&
-                    mkfs.xfs /dev/sdb1
-                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
-                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log || break
+                2)  mkfs.vfat -f /dev/nvme0n1p1 &&
+                    mkfs.xfs -f /dev/nvme0n1p2 &&
+                    mkfs.xfs -f /dev/sda1 &&
+                    mkfs.xfs -f /dev/sdb1
+                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Partition & foemat the disks" | tee -a ./log ||
+                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Partition & foemat the disks" | tee -a ./log || break
                     ;;
                 3)  parted -s /dev/nvme0n1 mklabel gpt &&
                     parted -s /dev/nvme0n1 mkpart "esp" fat32 '0%' 200MB &&
@@ -144,12 +152,12 @@ echo "
                     parted -s /dev/sda mkpart "disk2" xfs '0%' '100%' &&
                     parted -s /dev/sdb mklabel gpt &&
                     parted -s /dev/sdb mkpart "disk1" xfs '0%' '100%' &&
-                    mkfs.vfat /dev/nvme0n1p1 && sleep 3 &&
-                    mkfs.xfs /dev/nvme0n1p2 && sleep 3 &&
-                    mkfs.xfs /dev/sda1 && sleep 3 &&
-                    mkfs.xfs /dev/sdb1 && sleep 3 &&
-                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
-                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log || break
+                    mkfs.vfat -f /dev/nvme0n1p1 && sleep 3 &&
+                    mkfs.xfs -f /dev/nvme0n1p2 && sleep 3 &&
+                    mkfs.xfs -f /dev/sda1 && sleep 3 &&
+                    mkfs.xfs -f /dev/sdb1 && sleep 3 &&
+                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Partition & foemat the disks" | tee -a ./log ||
+                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Partition & foemat the disks" | tee -a ./log || break
                     ;;
             esac
             ;;
@@ -160,19 +168,19 @@ echo "
             read -p ":: Select disks FORMATING configuration : " ACTION
             echo
             case $ACTION in
-                1)  mkfs.vfat /dev/sda1 &&
-                    mkfs.xfs /dev/sda2
-                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
-                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log || break
+                1)  mkfs.vfat -f /dev/sda1 &&
+                    mkfs.xfs -f /dev/sda2
+                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Partition & foemat the disks" | tee -a ./log ||
+                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Partition & foemat the disks" | tee -a ./log || break
                     ;;
                 2)  parted -s /dev/sda mklabel gpt &&
                     parted -s /dev/sda mkpart "esp" fat32 '0%' 300MB &&
                     parted -s /dev/sda set 1 esp on &&
                     parted -s /dev/sda mkpart "root" xfs 300MiB '100%' &&
-                    mkfs.vfat /dev/sda1 && sleep 3 &&
-                    mkfs.xfs /dev/sda2 && sleep 3 &&
-                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
-                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log || break
+                    mkfs.vfat -f /dev/sda1 && sleep 3 &&
+                    mkfs.xfs -f /dev/sda2 && sleep 3 &&
+                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Partition & foemat the disks" | tee -a ./log ||
+                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Partition & foemat the disks" | tee -a ./log || break
                     ;;
             esac
             ;;
@@ -180,18 +188,18 @@ echo "
             parted -s /dev/vda mkpart "esp" fat32 '0%' 200MB &&
             parted -s /dev/vda set 1 esp on &&
             parted -s /dev/vda mkpart "root" xfs 200MiB '100%' &&
-            mkfs.vfat /dev/sda1 && sleep 3 &&
-            mkfs.xfs /dev/sda2 && sleep 3 &&
-                echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
-                echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log || break
+            mkfs.vfat -f /dev/sda1 && sleep 3 &&
+            mkfs.xfs -f /dev/sda2 && sleep 3 &&
+                echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Partition & foemat the disks" | tee -a ./log ||
+                echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Partition & foemat the disks" | tee -a ./log || break
             ;;
         4)  parted -s /dev/vda mkpart primary fat32 '0%' 200MB &&
             parted -s /dev/vda set 1 boot on &&
             parted -s /dev/vda mkpart primary xfs 200MiB '100%' &&
-            mkfs.vfat /dev/vda1 && sleep 3 &&
-            mkfs.xfs /dev/vda2 && sleep 3 &&
-                echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
-                echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log || break
+            mkfs.vfat -f /dev/vda1 && sleep 3 &&
+            mkfs.xfs -f /dev/vda2 && sleep 3 &&
+                echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Partition & foemat the disks" | tee -a ./log ||
+                echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Partition & foemat the disks" | tee -a ./log || break
             ;;
         5)  echo
             echo "   1.Format ROOT partition only"
@@ -200,10 +208,10 @@ echo "
             read -p ":: Select disks FORMATING configuration : " ACTION
             echo
             case $ACTION in
-                1)  mkfs.vfat /dev/sda1 && sleep 3 &&
+                1)  mkfs.vfat -f /dev/sda1 && sleep 3 &&
                     mkfs.xfs -f /dev/sda2 && sleep 3 &&
-                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
-                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log || break
+                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Partition & foemat the disks" | tee -a ./log ||
+                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Partition & foemat the disks" | tee -a ./log || break
                     ;;
                 2)  parted -s /dev/sda mklabel gpt &&
                     parted -s /dev/sda mkpart "esp" fat32 '0%' 300MB &&
@@ -213,8 +221,8 @@ echo "
                     mkfs.vfat /dev/sda1 && sleep 3 &&
                     mkfs.xfs /dev/sda2 && sleep 3 &&
                     mkfs.xfs /dev/sda3 && sleep 3 &&
-                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log ||
-                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-4.Partition & foemat the disks" | tee -a ./log || break
+                        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-5.Partition & foemat the disks" | tee -a ./log ||
+                        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-5.Partition & foemat the disks" | tee -a ./log || break
                     ;;
             esac
             ;;
@@ -223,7 +231,7 @@ echo "
             ;;
     esac
 
-# 1-5.Mount the file systems
+# 1-6.Mount the file systems
     echo
    sleep 3 
    case $PARTITION in
@@ -248,21 +256,22 @@ echo "
     esac
     echo $PARTITION >> /mnt/tmp_PARTITION
 
-# 1-6.Get the mirrorlist directly from Pacman Mirrorlist Generator:
-#    curl -s "https://archlinux.org/mirrorlist/?country=TW&protocol=http&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on" | sed -e 's/^#Server/Server/' -e '/^#/d' >> /etc/pacman.d/mirrorlist &&
-#    sleep 3
-#    mkdir /mnt/etc/pacman.d
-#    cp -f /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist &&
-#        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-6.Get the mirrorlist directly from Pacman Mirrorlist Generator" | tee -a ./log ||
-#        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-6.Get the mirrorlist directly from Pacman Mirrorlist Generator" | tee -a ./log
+# 1-7.Get the mirrorlist directly from Pacman Mirrorlist Generator:
+    rm /etc/pacman.d/mirrorlist
+    curl -s "https://archlinux.org/mirrorlist/?country=TW&protocol=http&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on" | sed -e 's/^#Server/Server/' -e '/^#/d' >> /etc/pacman.d/mirrorlist &&
+    sleep 3 &&
+    mkdir /mnt/etc/pacman.d &&
+    cp -f /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist &&
+        echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-6.Get the mirrorlist directly from Pacman Mirrorlist Generator" | tee -a ./log ||
+        echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-6.Get the mirrorlist directly from Pacman Mirrorlist Generator" | tee -a ./log
 
-# 1-7.Install linux kernel & base packages
+# 1-8.Install linux kernel & base packages
     echo
     pacstrap /mnt base linux linux-firmware &&
         echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-7.Install linux kernel & base packages" | tee -a ./log ||
         echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-7.Install linux kernel & base packages" | tee -a ./log || break
 
-# 1-8.Generate fstab
+# 1-9.Generate fstab
     echo
     rm -f /mnt/etc/fstab &&
     genfstab -U /mnt >> /mnt/etc/fstab &&
@@ -270,7 +279,7 @@ echo "
         echo "( $(tput setaf 2)O$(tput sgr 0) ) 1-8.Generate fstab" | tee -a ./log ||
         echo "( $(tput setaf 1)X$(tput sgr 0) ) 1-8.Generate fstab" | tee -a ./log || break
 
-# 1-9.Change root into the new system
+# 1-10.Change root into the new system
     echo
     cat ./log
     echo
@@ -309,8 +318,6 @@ echo "
                         echo
                         sed -i '/#en_US.UTF-8 UTF-8/a\en_US.UTF-8 UTF-8' /etc/locale.gen &&
                         sed -i '/#en_US.UTF-8 UTF-8/d' /etc/locale.gen &&
-                        sed -i '/#ja_JP.UTF-8 UTF-8/a\ja_JP.UTF-8 UTF-8' /etc/locale.gen &&
-                        sed -i '/#ja_JP.UTF-8 UTF-8/d' /etc/locale.gen &&
                         sed -i '/#zh_TW.UTF-8 UTF-8/a\zh_TW.UTF-8 UTF-8' /etc/locale.gen &&
                         sed -i '/#zh_TW.UTF-8 UTF-8/d' /etc/locale.gen &&
                         locale-gen &&
@@ -370,35 +377,43 @@ echo "
                             echo "default arch" >> /boot/loader/loader.conf &&
                             echo "timeout 4"    >> /boot/loader/loader.conf &&
                             echo "editor no"    >> /boot/loader/loader.conf &&
-                            
-                            # Edit /etc/pacman.d/hooks/100-systemd-boot.hook
-                            mkdir /etc/pacman.d/hooks/
-                            echo "[Trigger]"                           >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
-                            echo "Type = Package"                      >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
-                            echo "Operation = Upgrade"                 >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
-                            echo "Target = systemd"                    >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
-                            echo ""                                    >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
-                            echo "[Action]"                            >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
-                            echo "Description = Gracefully upgrading systemd-boot..." >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
-                            echo "When = PostTransaction"              >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
-                            echo "Exec = /usr/bin/systemctl restart systemd-boot-update.service" >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
 
-                            # Edit /etc/pacman.d/hooks/99-secureboot.hook for Secure Boot
-                            #echo "[Trigger]"                           >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            #echo "Operation = Install"                 >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            #echo "Operation = Upgrade"                 >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            #echo "Type = Package"                      >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            #echo "Target = linux"                      >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            #echo "Target = systemd"                    >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            #echo ""                                    >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            #echo "[Action]"                            >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            #echo "Description = Signing Kernel for Secure Boot" >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            #echo "When = PostTransaction"              >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            #echo "Exec = /usr/bin/find /boot -type f ( -name vmlinuz-* -o -name systemd* ) -exec /usr/bin/sh -c 'if ! /usr/bin/sbverify --list {} 2>/dev/null | /usr/bin/grep -q "signature certificates"; then /usr/bin/sbsign --key db.key --cert db.crt --output "$1" "$1"; fi' _ {} ;" >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            #echo "Depends = sbsigntools"               >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            #echo "Depends = findutils"                 >> /etc/pacman.d/hooks/99-secureboot.hook &&
-                            #echo "Depends = grep"                      >> /etc/pacman.d/hooks/99-secureboot.hook &&
-
+                            # Select Secure Boot status
+                            echo
+                            echo "   1.Secure Boot is ENABLED"
+                            echo "   2.Secure Boot is DISABLED"
+                            mkdir -f /etc/pacman.d/hooks/
+                            read -p ":: Select Secure Boot status : " PARTITION
+                            case $PARTITION in
+                             1)  # Edit /etc/pacman.d/hooks/99-secureboot.hook for Secure Boot
+                                 echo "[Trigger]"                           >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                                 echo "Operation = Install"                 >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                                 echo "Operation = Upgrade"                 >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                                 echo "Type = Package"                      >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                                 echo "Target = linux"                      >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                                 echo "Target = systemd"                    >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                                 echo ""                                    >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                                 echo "[Action]"                            >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                                 echo "Description = Signing Kernel for Secure Boot" >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                                 echo "When = PostTransaction"              >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                                 echo "Exec = /usr/bin/find /boot -type f ( -name vmlinuz-* -o -name systemd* ) -exec /usr/bin/sh -c 'if ! /usr/bin/sbverify --list {} 2>/dev/null | /usr/bin/grep -q "signature certificates"; then /usr/bin/sbsign --key db.key --cert db.crt --output "$1" "$1"; fi' _ {} ;" >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                                 echo "Depends = sbsigntools"               >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                                 echo "Depends = findutils"                 >> /etc/pacman.d/hooks/99-secureboot.hook &&
+                                 echo "Depends = grep"                      >> /etc/pacman.d/hooks/99-secureboot.hook
+                                 ;;
+                             2)  
+                                 # Edit /etc/pacman.d/hooks/100-systemd-boot.hook
+                                 echo "[Trigger]"                           >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                                 echo "Type = Package"                      >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                                 echo "Operation = Upgrade"                 >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                                 echo "Target = systemd"                    >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                                 echo ""                                    >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                                 echo "[Action]"                            >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                                 echo "Description = Gracefully upgrading systemd-boot..." >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                                 echo "When = PostTransaction"              >> /etc/pacman.d/hooks/100-systemd-boot.hook &&
+                                 echo "Exec = /usr/bin/systemctl restart systemd-boot-update.service" >> /etc/pacman.d/hooks/100-systemd-boot.hook
+                                 ;;
+                             esac
                             bootctl update &&
                                 echo "( $(tput setaf 2)O$(tput sgr 0) ) 2-7.systemd-boot configuration" | tee -a ./log ||
                                 echo "( $(tput setaf 1)X$(tput sgr 0) ) 2-7.systemd-boot configuration" | tee -a ./log
@@ -725,6 +740,24 @@ EOF
         # doas systemctl enable cpupower.service
         # doas cpupower frequency-set -u 3800000
 
+        ## 3-7-3.VVenc applications
+        # doas pacman -S --noconfirm --needed ffmpeg cpupower
+        # yay -S --editmenu vvenc (checksum='SKIP')
+        # cat << EOF | doas tee /etc/systemd/system/cpupower.service
+        # [Unit]
+        # Description=CPU performance
+        # [Service]
+        # Type=oneshot
+        # ExecStrat=/usr/bin/cpupower -c all frequency-set -g performance
+        # ExecStrat=/usr/bin/cpupower -c all frequency-set -u 3800000
+        # [Install]
+        # WantedBy=Multi-user.target
+        # EOF
+
+        # doas systemctl start cpupower.service
+        # doas systemctl enable cpupower.service
+        # doas cpupower frequency-set -u 3800000
+
         ### doas sh ./config/sophos-antivirus-free/install.sh
         # doas pacman -Rsn --noconfirm xdg-user-dirs
         doas systemctl start nftables.service
@@ -764,7 +797,7 @@ EOF
 
 ###  Install yay
 ###     curl https://repo.archlinuxcn.org/x86_64/yay-12.0.4-1-x86_64.pkg.tar.zst
-###     doas pacman -U yay-12.0.4-1-x86_64.pkg.tar.zst
+###     doas pacman -U yay-12.3.5-1-x86_64.pkg.tar.zst
 
 ###  Install trizen
 ###     git clone https://aur.archlinux.org/trizen.git
